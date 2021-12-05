@@ -1,0 +1,83 @@
+name: CI
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+
+jobs:
+  create_release:
+    name: Create release
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+      pbcli_version: ${{ env.PBCLI_VERSION }}
+    steps:
+      - name: Retrieve Version
+        shell: bash
+        if: env.PBCLI_VERSION == ''
+        run: |
+          echo "PBCLI_VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+          echo "version is: ${{ env.PBCLI_VERSION }}"
+      - name: Create release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.PBCLI_VERSION }}
+          release_name: ${{ env.PBCLI_VERSION }}
+          draft: false
+          prerelease: false
+
+  release_assets:
+    name: Release assets
+    needs: create_release
+    runs-on: ${{ matrix.config.os }}
+    strategy:
+      matrix:
+        config:
+          - os: ubuntu-latest
+            name: linux
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v1
+
+      - name: Install packages (Ubuntu)
+        if: matrix.config.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update && sudo apt-get install -y --no-install-recommends asciidoctor zsh xz-utils liblz4-tool musl-tools pkg-config libssl-dev
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          profile: minimal
+          override: true
+          target: ${{ matrix.target }}
+
+      - name: Build release binary
+        run: |
+          cargo build --verbose --release
+
+      - name: Strip
+        run: strip "target/release/pbcli"
+
+      - name: Build archive
+        shell: bash
+        run: |
+          staging="pbcli-${{ needs.create_release.outputs.pbcli_version }}-${{ matrix.config.name }}"
+          mkdir -p "$staging"
+          cp "target/release/pbcli" "$staging/"
+          tar czf "$staging.tar.gz" "$staging"
+          echo "ASSET=$staging.tar.gz" >> $GITHUB_ENV
+
+      - name: Upload release assets
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create_release.outputs.upload_url }}
+          asset_name: ${{ env.ASSET }}
+          asset_path: ${{ env.ASSET }}
+          asset_content_type: application/octet-stream

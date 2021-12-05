@@ -1,0 +1,29 @@
+[package]
+name = "pbcli"
+version = "2.0.0"
+authors = ["Mydayyy"]
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+clap = "3.0.0-beta.5"
+reqwest = { version = "0.11.6", features = ["blocking", "json"] }
+serde = { version = "1.0.130", features = ["derive"] }
+serde_json = "1.0.69"
+miniz_oxide = "0.5.0"
+ring = "0.16.20"
+aes-gcm = { version = "0.9.4", features = ["aes"] }
+bs58 = "0.4.0"
+base64 = "0.13.0"
+typenum = "1.14.0"
+hex-literal = "0.3.3"
+pbkdf2 = "0.9.0"
+rand_core = { version = "0.6.3", features = ["std"] }
+crypto-mac = "0.11.1"
+hmac = "0.11.0"
+sha2 = "0.9.8"
+url = "2.2.2"
+atty = "0.2.14"
+rand_chacha = "0.3.1"
+dialoguer = "0.9.0"
