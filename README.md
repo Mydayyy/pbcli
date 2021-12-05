@@ -17,7 +17,7 @@ It is dual licensed under MIT or the [UNLICENSE](https://unlicense.org).
 
 You can find pre-compiled binaries under the release tab in github.
 
-For Archlinux, it is available inside the AUR.
+For Archlinux, it is [available inside the AUR](https://aur.archlinux.org/packages/pbcli/).
 
 ### Building
 
