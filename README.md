@@ -37,7 +37,7 @@ pbcli is simple to use and only involves a few flags. The only
 needed argument is either the positional argument `URL` or the option flag
 `host`.  If both are provided the positional argument URL takes
 precedence. To avoid specifying the host / url everytime you can 
-take advantage of a config file as described [here](#Configuration File).
+take advantage of a config file as described [here](#Configuration-File).
 
 When posting a paste you can specify `--json` to receive post details. The output
 includes the base58 encoded key used to encrypt/decrypt the paste
