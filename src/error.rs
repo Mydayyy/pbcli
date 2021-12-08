@@ -1,6 +1,7 @@
 use std::fmt::{Formatter};
 use std::fmt;
 use base64::DecodeError;
+use data_url::DataUrlError;
 use miniz_oxide::inflate::TINFLStatus;
 use serde_json::Error;
 
@@ -27,6 +28,8 @@ pub enum PasteError {
     Base58Error(bs58::decode::Error),
     Aes(aes_gcm::Error),
     Zlib(miniz_oxide::inflate::TINFLStatus),
+    InvalidAttachment(data_url::DataUrlError),
+    FileExists,
 }
 
 
@@ -53,6 +56,8 @@ impl fmt::Display for PasteError {
             PasteError::MissingDecryptionKey => write!(f, "Missing decryption key"),
             // PasteError::BadUrl => write!(f, "Badly formatted url"),
             PasteError::InvalidData => write!(f, "Invalid Data"),
+            PasteError::InvalidAttachment(err) => write!(f, "Invalid attachment: {:?}", err),
+            PasteError::FileExists => write!(f, "File already exists. Use --overwrite to force"),
         }
     }
 }
@@ -102,5 +107,11 @@ impl From<miniz_oxide::inflate::TINFLStatus> for PasteError {
 impl From<bs58::decode::Error> for PasteError {
     fn from(err: bs58::decode::Error) -> Self {
         PasteError::Base58Error(err)
+    }
+}
+
+impl From<DataUrlError> for PasteError {
+    fn from(err: DataUrlError) -> Self {
+        PasteError::InvalidAttachment(err)
     }
 }

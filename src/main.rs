@@ -9,10 +9,11 @@ use url::Url;
 use crate::error::{PasteError, PbResult};
 use std::io::{Read, Write};
 use clap::{Parser};
-use crate::privatebin::PasteFormat;
+use crate::privatebin::{DecryptedPaste, PasteFormat};
+use data_url::{DataUrl};
 
 const ABOUT: &str =
-"pbcli is a command line client which allows to upload and download
+    "pbcli is a command line client which allows to upload and download
 pastes from privatebin directly from the command line.
 
 Project home page: https://github.com/Mydayyy/pbcli";
@@ -39,6 +40,13 @@ struct Opts {
     #[clap(long)]
     discussion: bool,
 
+    #[clap(long, parse(from_os_str))]
+    download: Option<std::path::PathBuf>,
+    #[clap(long)]
+    overwrite: bool,
+    // #[clap(long)]
+    // skip_extension: bool,
+
     #[clap(long)]
     password: Option<String>,
 }
@@ -63,27 +71,42 @@ fn handle_get(opts: &Opts) -> PbResult<()> {
     let api = api::API::new(url.clone());
     let paste = api.get_paste(paste_id)?;
 
+    let content: DecryptedPaste;
+
     if let Some(pass) = &opts.password {
-        let content = paste.decrypt_with_password(key, pass);
-        std::io::stdout().write_all(content?.paste.as_bytes())?;
-        return Ok(());
+        content = paste.decrypt_with_password(key, pass)?;
+    } else {
+        match paste.decrypt(key) {
+            Ok(c) => content = c,
+            Err(err) => {
+                if !atty::is(atty::Stream::Stdin) {
+                    return Err(err);
+                }
+
+                let password = dialoguer::Password::new().with_prompt("Enter password")
+                    .interact()?;
+                content = paste.decrypt_with_password(key, &password)?;
+            }
+        }
     }
 
-    let content = paste.decrypt(key);
+    if content.attachment.is_some() && opts.download.is_some() {
+        let attachment = content.attachment.as_ref().unwrap();
+        let outfile = opts.download.as_ref().unwrap();
 
-    if let Err(err) = content {
-        if !atty::is(atty::Stream::Stdin) {
-            return Err(err);
+        let url = DataUrl::process(&attachment)?;
+        let (body, _) = url.decode_to_vec().unwrap();
+
+        if outfile.exists() && !opts.overwrite {
+            return Err(PasteError::FileExists);
         }
 
-        let password = dialoguer::Password::new().with_prompt("Enter password")
-            .interact()?;
-        let content = paste.decrypt_with_password(key, &password)?;
-        std::io::stdout().write_all(content.paste.as_bytes())?;
-        return Ok(());
+        let mut handle = std::fs::File::create(&outfile)?;
+
+        handle.write_all(&body)?;
     }
 
-    std::io::stdout().write_all(content?.paste.as_bytes())?;
+    std::io::stdout().write_all(content.paste.as_bytes())?;
 
     Ok(())
 }

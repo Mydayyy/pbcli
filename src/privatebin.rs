@@ -69,6 +69,8 @@ pub struct Cipher {
 #[derive(Deserialize, Debug, Serialize)]
 pub struct DecryptedPaste {
     pub(crate) paste: String,
+    pub(crate) attachment: Option<String>,
+    pub(crate) attachment_name: Option<String>,
 }
 
 #[derive(Deserialize, Debug, Serialize)]
