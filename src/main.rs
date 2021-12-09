@@ -21,7 +21,7 @@ pastes from privatebin directly from the command line.
 Project home page: https://github.com/Mydayyy/pbcli";
 
 #[derive(Debug, Parser)]
-#[clap(setting = clap::AppSettings::AllArgsOverrideSelf, version = "2.0", author = "Mydayyy <dev@mydayyy.eu>", about = ABOUT)]
+#[clap(setting = clap::AppSettings::AllArgsOverrideSelf, version = env!("CARGO_PKG_VERSION"), author = "Mydayyy <dev@mydayyy.eu>", about = ABOUT)]
 struct Opts {
     #[clap(required_unless_present("host"), parse(try_from_str))]
     url: Option<Url>,
