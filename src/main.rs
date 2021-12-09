@@ -164,6 +164,7 @@ fn handle_post(opts: &Opts) -> PbResult<()> {
         url.set_query(Some(&res.id));
         url.set_fragment(Some(&res.bs58key));
         std::io::stdout().write_all(url.to_string().as_bytes())?;
+        writeln!(std::io::stdout(), "");
     }
 
     Ok(())
