@@ -20,7 +20,7 @@ pub enum PasteFormat {
     #[serde(rename = "plaintext")]
     Plaintext,
 
-    #[serde(rename = "syntax")]
+    #[serde(rename = "syntaxhighlighting")]
     Syntax,
 
     #[serde(rename = "markdown")]
