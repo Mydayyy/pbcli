@@ -42,14 +42,14 @@ struct Opts {
     #[clap(long)]
     discussion: bool,
 
-    #[clap(long, parse(from_os_str))]
+    #[clap(long, parse(from_os_str), value_name = "FILE")]
     download: Option<std::path::PathBuf>,
     #[clap(long)]
     overwrite: bool,
     // #[clap(long)]
     // skip_extension: bool,
 
-    #[clap(long, parse(from_os_str))]
+    #[clap(long, parse(from_os_str), value_name = "FILE")]
     upload: Option<std::path::PathBuf>,
 
     #[clap(long)]
