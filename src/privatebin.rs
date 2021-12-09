@@ -2,6 +2,7 @@ use std::io::ErrorKind;
 use serde::Deserialize;
 use serde::Serialize;
 use serde_json::Value;
+use serde_with::skip_serializing_none;
 use crate::error::PbResult;
 
 
@@ -66,6 +67,7 @@ pub struct Cipher {
     // test: String,
 }
 
+#[skip_serializing_none]
 #[derive(Deserialize, Debug, Serialize)]
 pub struct DecryptedPaste {
     pub(crate) paste: String,
