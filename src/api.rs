@@ -2,6 +2,7 @@ use std::str::FromStr;
 use rand_chacha::rand_core::{RngCore, SeedableRng};
 use reqwest::{Method, Url};
 use crate::crypto::encrypt;
+use crate::DecryptedPaste;
 use crate::privatebin::{Paste, PasteFormat, PostPasteResponse};
 use crate::error::{PasteError, PbResult};
 
@@ -39,7 +40,7 @@ impl API {
         }
     }
 
-    pub fn post_paste(&self, content: &str, expire: &str, password: &str, format: &PasteFormat, discussion: bool, burn: bool) -> PbResult<PostPasteResponse> {
+    pub fn post_paste(&self, content: &DecryptedPaste, expire: &str, password: &str, format: &PasteFormat, discussion: bool, burn: bool) -> PbResult<PostPasteResponse> {
         let mut rng = rand_chacha::ChaCha20Rng::from_entropy();
         let mut paste_passphrase = [0u8; 32];
         let mut kdf_salt = [0u8; 8];
@@ -59,9 +60,7 @@ impl API {
             }
         });
         let adata = post_body.get("adata").unwrap().to_string();
-
-        let encrypted_content = encrypt(content, &paste_passphrase.into(), password, &kdf_salt.into(), &nonce.into(), iterations, &adata)?;
-
+        let encrypted_content = encrypt(&serde_json::to_string(content)?, &paste_passphrase.into(), password, &kdf_salt.into(), &nonce.into(), iterations, &adata)?;
         post_body["ct"] = base64::encode(&encrypted_content).into();
 
         let url = self.base.clone();

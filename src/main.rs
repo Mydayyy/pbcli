@@ -4,6 +4,7 @@ mod api;
 mod error;
 mod config;
 
+use std::ffi::OsStr;
 use std::fmt::{Debug};
 use url::Url;
 use crate::error::{PasteError, PbResult};
@@ -11,6 +12,7 @@ use std::io::{Read, Write};
 use clap::{Parser};
 use crate::privatebin::{DecryptedPaste, PasteFormat};
 use data_url::{DataUrl};
+use serde_json::json;
 
 const ABOUT: &str =
     "pbcli is a command line client which allows to upload and download
@@ -47,6 +49,9 @@ struct Opts {
     // #[clap(long)]
     // skip_extension: bool,
 
+    #[clap(long, parse(from_os_str))]
+    upload: Option<std::path::PathBuf>,
+
     #[clap(long)]
     password: Option<String>,
 }
@@ -58,9 +63,17 @@ impl Opts {
 }
 
 fn get_stdin() -> std::io::Result<String> {
+    if atty::is(atty::Stream::Stdin) {
+        return Ok("".into());
+    }
     let mut buffer = String::new();
     std::io::stdin().read_to_string(&mut buffer)?;
     return Ok(buffer);
+}
+
+fn create_dataurl(path: &OsStr, data: String) -> String {
+    let mime = mime_guess::from_path(path).first().unwrap_or(mime_guess::mime::APPLICATION_OCTET_STREAM);
+    format!("data:{};base64,{}", mime.essence_str(), data)
 }
 
 fn handle_get(opts: &Opts) -> PbResult<()> {
@@ -120,7 +133,28 @@ fn handle_post(opts: &Opts) -> PbResult<()> {
         None => "",
         Some(password) => password
     };
-    let res = api.post_paste(&stdin, &opts.expire, password, &opts.format, opts.discussion, opts.burn)?;
+
+    let mut paste = DecryptedPaste {
+        paste: stdin,
+        attachment: None,
+        attachment_name: None,
+    };
+
+    if let Some(path) = &opts.upload {
+        if !path.is_file() {
+            return Err(PasteError::NotAFile);
+        }
+
+        let mut handle = std::fs::File::open(path)?;
+        let mut data = Vec::new();
+        handle.read_to_end(&mut data)?;
+        let b64_data = base64::encode(data);
+
+        paste.attachment = Some(create_dataurl(path.as_os_str(), b64_data));
+        paste.attachment_name = Some(path.file_name().ok_or(PasteError::NotAFile)?.to_string_lossy().to_string());
+    }
+
+    let res = api.post_paste(&paste, &opts.expire, password, &opts.format, opts.discussion, opts.burn)?;
 
     if opts.json {
         std::io::stdout().write_all(serde_json::to_string(&res)?.as_bytes())?;

@@ -33,11 +33,7 @@ pub fn decrypt_with_password(paste: &Paste, key: &[u8], password: &str) -> PbRes
 }
 
 pub fn encrypt(content: &str, key: &Vec<u8>, password: &str, salt: &Vec<u8>, nonce: &Vec<u8>, iterations: u32, aad: &str) -> PbResult<Vec<u8>> {
-    let paste_data_json = serde_json::json!({
-            "paste": content
-        });
-    let paste_data = serde_json::to_string(&paste_data_json)?;
-    let paste_blob = miniz_oxide::deflate::compress_to_vec(paste_data.as_bytes(), 10);
+    let paste_blob = miniz_oxide::deflate::compress_to_vec(content.as_bytes(), 10);
 
     let key = [key, password.as_bytes()].concat();
 
