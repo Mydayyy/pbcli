@@ -80,14 +80,14 @@ echo 'TestPaste' | pbcli --host https://privatebin.net/ --burn
 ---
 #### CLI Help:
 ```
-pbcli 2.0
+pbcli 2.1.0
 
 Mydayyy <dev@mydayyy.eu>
 
 pbcli is a command line client which allows to upload and download
 pastes from privatebin directly from the command line.
 
-Project home page: https://github.com/X
+Project home page: https://github.com/Mydayyy/pbcli
 
 USAGE:
     pbcli [OPTIONS] [URL]
@@ -98,12 +98,15 @@ ARGS:
 OPTIONS:
         --burn                   
         --discussion             
+        --download <FILE>        
         --expire <EXPIRE>        [default: 1week]
         --format <FORMAT>        [default: plaintext] [possible values: plaintext, syntax, markdown]
     -h, --help                   Print help information
         --host <HOST>            
         --json                   
+        --overwrite              
         --password <PASSWORD>    
+        --upload <FILE>          
     -V, --version                Print version information
 ```
 
