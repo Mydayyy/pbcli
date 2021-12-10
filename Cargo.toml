@@ -1,8 +1,18 @@
 [package]
 name = "pbcli"
+description = """
+pbcli is a command line client which allows to upload and download
+pastes from privatebin directly from the command line.
+"""
 version = "2.1.0"
 authors = ["Mydayyy"]
 edition = "2021"
+documentation = "https://github.com/Mydayyy/pbcli"
+homepage = "https://github.com/Mydayyy/pbcli"
+repository = "https://github.com/Mydayyy/pbcli"
+keywords = ["privatebin", "pastebin", "pasteservice"]
+categories = ["command-line-utilities"]
+license = "Unlicense OR MIT"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
