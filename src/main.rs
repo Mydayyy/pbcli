@@ -12,7 +12,6 @@ use std::io::{Read, Write};
 use clap::{Parser};
 use crate::privatebin::{DecryptedPaste, PasteFormat};
 use data_url::{DataUrl};
-use serde_json::json;
 
 const ABOUT: &str =
     "pbcli is a command line client which allows to upload and download
@@ -164,7 +163,7 @@ fn handle_post(opts: &Opts) -> PbResult<()> {
         url.set_query(Some(&res.id));
         url.set_fragment(Some(&res.bs58key));
         std::io::stdout().write_all(url.to_string().as_bytes())?;
-        writeln!(std::io::stdout(), "");
+        writeln!(std::io::stdout(), "")?;
     }
 
     Ok(())

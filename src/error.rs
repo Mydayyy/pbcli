@@ -1,4 +1,4 @@
-use std::fmt::{Formatter, write};
+use std::fmt::{Formatter};
 use std::fmt;
 use base64::DecodeError;
 use data_url::DataUrlError;
@@ -30,7 +30,6 @@ pub enum PasteError {
     Zlib(miniz_oxide::inflate::TINFLStatus),
     InvalidAttachment(data_url::DataUrlError),
     FileExists,
-    FileNotFound,
     NotAFile,
 }
 
@@ -60,7 +59,6 @@ impl fmt::Display for PasteError {
             PasteError::InvalidData => write!(f, "Invalid Data"),
             PasteError::InvalidAttachment(err) => write!(f, "Invalid attachment: {:?}", err),
             PasteError::FileExists => write!(f, "File already exists. Use --overwrite to force"),
-            PasteError::FileNotFound => write!(f, "File not found"),
             PasteError::NotAFile => write!(f, "Given path is not a file"),
         }
     }
