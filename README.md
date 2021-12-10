@@ -126,6 +126,7 @@ Example config:
 
 ### Roadmap
 
+- Descriptive error messages
 - Add support for auth mechanism 
   - Basic auth
   - oauth
