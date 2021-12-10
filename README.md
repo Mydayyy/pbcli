@@ -129,4 +129,4 @@ Example config:
 - Add support for auth mechanism 
   - Basic auth
   - oauth
-- Add support for file attachments
+- ~~Add support for file attachments~~ Added in v2.1.0
