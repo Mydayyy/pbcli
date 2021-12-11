@@ -20,15 +20,8 @@ impl API {
         Self { base: url }
     }
 
-    fn make_url_query_string<I, K, V>(&self, query_string: I) -> PbResult<Url> where I: IntoIterator,
-                                                                                     I::Item: std::borrow::Borrow<(K, V)>,
-                                                                                     K: AsRef<str>,
-                                                                                     V: AsRef<str>, {
-        Ok(reqwest::Url::parse_with_params(&self.base.as_str(), query_string)?)
-    }
-
     pub fn get_paste(&self, paste_id: &str) -> PbResult<Paste> {
-        let url = self.make_url_query_string([("pasteid", paste_id)])?;
+        let url = reqwest::Url::parse_with_params(&self.base.as_str(), [("pasteid", paste_id)])?;
         let client = reqwest::blocking::Client::builder().build()?;
         let value: serde_json::Value = client.request(Method::from_str("GET").unwrap(), url).header("X-Requested-With", "JSONHttpRequest").send()?.json()?;
         let status: u32 = value.get("status").unwrap().as_u64().unwrap() as u32;
