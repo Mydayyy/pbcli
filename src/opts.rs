@@ -38,8 +38,6 @@ pub struct Opts {
     #[clap(long)]
     #[clap(help("overwrite the file given with --download if it already exists"))]
     pub overwrite: bool,
-    // #[clap(long)]
-    // skip_extension: bool,
 
     #[clap(long, parse(from_os_str), value_name = "FILE")]
     pub upload: Option<std::path::PathBuf>,
