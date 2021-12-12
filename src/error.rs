@@ -31,6 +31,8 @@ pub enum PasteError {
     InvalidAttachment(data_url::DataUrlError),
     FileExists,
     NotAFile,
+    InvalidTokenType(String),
+    OidcBadRequest(serde_json::Value),
 }
 
 
@@ -60,6 +62,8 @@ impl fmt::Display for PasteError {
             PasteError::InvalidAttachment(err) => write!(f, "Invalid attachment: {:?}", err),
             PasteError::FileExists => write!(f, "File already exists. Use --overwrite to force"),
             PasteError::NotAFile => write!(f, "Given path is not a file"),
+            PasteError::InvalidTokenType(token_type) => write!(f, "Invalid token type: {}", token_type),
+            PasteError::OidcBadRequest(json) => write!(f, "{}", json),
         }
     }
 }

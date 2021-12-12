@@ -3,63 +3,14 @@ mod privatebin;
 mod api;
 mod error;
 mod config;
+mod opts;
 
-use std::ffi::OsStr;
-use std::fmt::{Debug};
-use url::Url;
-use crate::error::{PasteError, PbResult};
 use std::io::{Read, Write};
 use clap::{Parser};
-use crate::privatebin::{DecryptedPaste, PasteFormat};
 use data_url::{DataUrl};
-
-const ABOUT: &str =
-    "pbcli is a command line client which allows to upload and download
-pastes from privatebin directly from the command line.
-
-Project home page: https://github.com/Mydayyy/pbcli";
-
-#[derive(Debug, Parser)]
-#[clap(setting = clap::AppSettings::AllArgsOverrideSelf, version = env!("CARGO_PKG_VERSION"), author = "Mydayyy <dev@mydayyy.eu>", about = ABOUT)]
-struct Opts {
-    #[clap(required_unless_present("host"), parse(try_from_str))]
-    url: Option<Url>,
-
-    #[clap(long, parse(try_from_str))]
-    host: Option<Url>,
-
-    #[clap(long, arg_enum, default_value = "plaintext")]
-    format: PasteFormat,
-
-    #[clap(long, default_value = "1week")]
-    expire: String,
-
-    #[clap(long)]
-    json: bool,
-    #[clap(long, conflicts_with = "discussion")]
-    burn: bool,
-    #[clap(long)]
-    discussion: bool,
-
-    #[clap(long, parse(from_os_str), value_name = "FILE")]
-    download: Option<std::path::PathBuf>,
-    #[clap(long)]
-    overwrite: bool,
-    // #[clap(long)]
-    // skip_extension: bool,
-
-    #[clap(long, parse(from_os_str), value_name = "FILE")]
-    upload: Option<std::path::PathBuf>,
-
-    #[clap(long)]
-    password: Option<String>,
-}
-
-impl Opts {
-    pub fn get_url(&self) -> &Url {
-        self.url.as_ref().unwrap_or_else(|| self.host.as_ref().unwrap())
-    }
-}
+use crate::opts::Opts;
+use crate::privatebin::{DecryptedPaste, PasteFormat};
+use crate::error::{PasteError, PbResult};
 
 fn get_stdin() -> std::io::Result<String> {
     if atty::is(atty::Stream::Stdin) {
@@ -70,7 +21,7 @@ fn get_stdin() -> std::io::Result<String> {
     return Ok(buffer);
 }
 
-fn create_dataurl(path: &OsStr, data: String) -> String {
+fn create_dataurl(path: &std::ffi::OsStr, data: String) -> String {
     let mime = mime_guess::from_path(path).first().unwrap_or(mime_guess::mime::APPLICATION_OCTET_STREAM);
     format!("data:{};base64,{}", mime.essence_str(), data)
 }
@@ -80,7 +31,7 @@ fn handle_get(opts: &Opts) -> PbResult<()> {
     let paste_id = opts.get_url().query().unwrap();
     let key = opts.get_url().fragment().ok_or(PasteError::MissingDecryptionKey)?;
 
-    let api = api::API::new(url.clone());
+    let api = api::API::new(url.clone(), opts.clone());
     let paste = api.get_paste(paste_id)?;
 
     let content: DecryptedPaste;
@@ -126,7 +77,7 @@ fn handle_get(opts: &Opts) -> PbResult<()> {
 fn handle_post(opts: &Opts) -> PbResult<()> {
     let url = opts.get_url();
     let stdin = get_stdin()?;
-    let api = api::API::new(url.clone());
+    let api = api::API::new(url.clone(), opts.clone());
 
     let password = match &opts.password {
         None => "",
