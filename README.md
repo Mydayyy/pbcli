@@ -136,5 +136,5 @@ Example config:
 - Descriptive error messages
 - Add support for auth mechanism 
   - Basic auth
-  - oauth
+  - ~~oauth~~ Added in v2.2.0 using Resource Owner Password Credential Grant flow
 - ~~Add support for file attachments~~ Added in v2.1.0
