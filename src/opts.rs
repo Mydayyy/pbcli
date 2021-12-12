@@ -36,6 +36,7 @@ pub struct Opts {
     #[clap(long, parse(from_os_str), value_name = "FILE")]
     pub download: Option<std::path::PathBuf>,
     #[clap(long)]
+    #[clap(help("overwrite the file given with --download if it already exists"))]
     pub overwrite: bool,
     // #[clap(long)]
     // skip_extension: bool,
@@ -46,24 +47,25 @@ pub struct Opts {
     #[clap(long)]
     pub password: Option<String>,
 
-    #[clap(long, requires_all(&["oidc-client-id", "oidc-username", "oidc-password"]))]
+    #[clap(long, requires_all(& ["oidc-client-id", "oidc-username", "oidc-password"]))]
+    #[clap(help("oidc token endpoint from which to obtain an access token"))]
     pub oidc_token_url: Option<String>,
 
     #[clap(long)]
+    #[clap(help("client id to send to the token endpoint"))]
     pub oidc_client_id: Option<String>,
 
     #[clap(long)]
+    #[clap(help("username to send to the token endpoint"))]
     pub oidc_username: Option<String>,
 
     #[clap(long)]
+    #[clap(help("password to send to the token endpoint"))]
     pub oidc_password: Option<String>,
 }
 
 impl Opts {
     pub fn get_url(&self) -> &Url {
-
-
-
         self.url.as_ref().unwrap_or_else(|| self.host.as_ref().unwrap())
     }
 }

@@ -80,7 +80,7 @@ echo 'TestPaste' | pbcli --host https://privatebin.net/ --burn
 ---
 #### CLI Help:
 ```
-pbcli 2.1.0
+pbcli 2.2.0
 
 Mydayyy <dev@mydayyy.eu>
 
@@ -96,18 +96,22 @@ ARGS:
     <URL>    
 
 OPTIONS:
-        --burn                   
-        --discussion             
-        --download <FILE>        
-        --expire <EXPIRE>        [default: 1week]
-        --format <FORMAT>        [default: plaintext] [possible values: plaintext, syntax, markdown]
-    -h, --help                   Print help information
-        --host <HOST>            
-        --json                   
-        --overwrite              
-        --password <PASSWORD>    
-        --upload <FILE>          
-    -V, --version                Print version information
+        --burn                               
+        --discussion                         
+        --download <FILE>                    
+        --expire <EXPIRE>                    [default: 1week]
+        --format <FORMAT>                    [default: plaintext] [possible values: plaintext, syntax, markdown]
+    -h, --help                               Print help information
+        --host <HOST>                        
+        --json                               
+        --oidc-client-id <OIDC_CLIENT_ID>    
+        --oidc-password <OIDC_PASSWORD>      
+        --oidc-token-url <OIDC_TOKEN_URL>    
+        --oidc-username <OIDC_USERNAME>      
+        --overwrite                          
+        --password <PASSWORD>                
+        --upload <FILE>                      
+    -V, --version                            Print version information
 ```
 
 ### Configuration File
