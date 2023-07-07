@@ -109,8 +109,7 @@ fn handle_post(opts: &Opts) -> PbResult<()> {
     if opts.json {
         std::io::stdout().write_all(serde_json::to_string(&res)?.as_bytes())?;
     } else {
-        let mut url = opts.get_url().clone();
-        url.set_path("");
+        let mut url = api.base().clone();
         url.set_query(Some(&res.id));
         url.set_fragment(Some(&res.bs58key));
         std::io::stdout().write_all(url.to_string().as_bytes())?;

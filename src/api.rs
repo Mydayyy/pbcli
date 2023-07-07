@@ -17,7 +17,9 @@ impl API {
     pub fn new(mut url: Url, opts: Opts) -> Self {
         url.set_fragment(None);
         url.set_query(None);
-        url.set_path("");
+        if !url.path().ends_with("/") {
+            url.set_path(&format!("{}{}", url.path(), "/"))
+        }
         Self { base: url, opts }
     }
 
@@ -117,5 +119,9 @@ impl API {
             1 => Err(PasteError::InvalidData),
             s => Err(PasteError::UnknownPasteStatus(s)),
         }
+    }
+
+    pub fn base(&self) -> &Url {
+        &self.base
     }
 }
