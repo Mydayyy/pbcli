@@ -3,8 +3,8 @@ use crate::error::{PasteError, PbResult};
 use crate::privatebin::{DecryptedPaste, Paste};
 use aes_gcm::aead::{Aead, NewAead};
 
-fn derive_key(iterations: std::num::NonZeroU32, salt: &[u8], key: &[u8], out: &mut [u8]) -> () {
-    ring::pbkdf2::derive(ring::pbkdf2::PBKDF2_HMAC_SHA256, iterations, &salt, &key, out);
+fn derive_key(iterations: std::num::NonZeroU32, salt: &[u8], key: &[u8], out: &mut [u8]) {
+    ring::pbkdf2::derive(ring::pbkdf2::PBKDF2_HMAC_SHA256, iterations, salt, key, out);
 }
 
 pub fn decrypt_with_password(paste: &Paste, key: &[u8], password: &str) -> PbResult<DecryptedPaste> {
@@ -39,7 +39,7 @@ pub fn encrypt(content: &str, key: &Vec<u8>, password: &str, salt: &Vec<u8>, non
 
 
     let mut derived_key = [0u8; 32];
-    derive_key(std::num::NonZeroU32::new(iterations).unwrap(), &salt, &key, &mut derived_key);
+    derive_key(std::num::NonZeroU32::new(iterations).unwrap(), salt, &key, &mut derived_key);
 
     type Cipher = aes_gcm::AesGcm<aes_gcm::aes::Aes256, typenum::U16>;
     let cipher = Cipher::new(Key::from_slice(&derived_key));
@@ -47,7 +47,7 @@ pub fn encrypt(content: &str, key: &Vec<u8>, password: &str, salt: &Vec<u8>, non
         msg: &paste_blob,
         aad: aad.as_bytes(),
     };
-    let encrypted_data = cipher.encrypt(Nonce::from_slice(&nonce), payload)?;
+    let encrypted_data = cipher.encrypt(Nonce::from_slice(nonce), payload)?;
 
     Ok(encrypted_data)
 }
@@ -62,7 +62,7 @@ fn decrypt_aes_256_gcm(paste: &Paste, derived_key: &[u8]) -> PbResult<DecryptedP
     let ciphertext = base64::decode(&paste.ct)?;
     let nonce = base64::decode(&paste.adata.cipher.cipher_iv)?;
 
-    let cipher = Cipher::new(Key::from_slice(&derived_key));
+    let cipher = Cipher::new(Key::from_slice(derived_key));
     let payload = aes_gcm::aead::Payload {
         msg: &ciphertext,
         aad: paste.adata_str.as_bytes(),
