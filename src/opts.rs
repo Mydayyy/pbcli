@@ -1,3 +1,4 @@
+use parse_size::parse_size;
 use url::Url;
 use crate::PasteFormat;
 use clap::{Parser};
@@ -25,6 +26,9 @@ pub struct Opts {
 
     #[clap(long, default_value = "1week")]
     pub expire: String,
+
+    #[clap(long, parse(try_from_str = parse_size))]
+    pub wip_arg:  Option<u64>,
 
     #[clap(long)]
     pub json: bool,

@@ -8,6 +8,8 @@ mod opts;
 use std::io::{Read, Write};
 use clap::{Parser};
 use data_url::{DataUrl};
+use log::log;
+use parse_size::parse_size;
 use crate::opts::Opts;
 use crate::privatebin::{DecryptedPaste, PasteFormat};
 use crate::error::{PasteError, PbResult};
@@ -104,6 +106,15 @@ fn handle_post(opts: &Opts) -> PbResult<()> {
         paste.attachment_name = Some(path.file_name().ok_or(PasteError::NotAFile)?.to_string_lossy().to_string());
     }
 
+    let paste_size: u64 = (paste.paste.len() + paste.attachment.as_ref().unwrap_or(&"".to_owned()).len()) as u64;
+    println!("paste size {:?}", paste_size);
+    if let Some(max_paste_size) = &opts.wip_arg {
+        if(paste_size > *max_paste_size) {
+            println!("max paste size exceeded");
+
+        }
+    }
+
     let res = api.post_paste(&paste, &opts.expire, password, &opts.format, opts.discussion, opts.burn)?;
 
     if opts.json {
@@ -122,6 +133,12 @@ fn handle_post(opts: &Opts) -> PbResult<()> {
 fn main() -> PbResult<()> {
     let args = crate::config::get_args();
     let opts: Opts = Opts::parse_from(args);
+
+    // let size = opts.wip_arg.clone().unwrap();
+    // println!("{:?}", opts.wip_arg.clone().unwrap());
+
+    // let size = parse_size(size);
+    println!("{:?}", opts.wip_arg);
 
     let url_has_query = opts.get_url().query().is_some();
     if url_has_query {

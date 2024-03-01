@@ -109,7 +109,6 @@ impl API {
 
         let url = self.base.clone();
         let response = self.preconfigured_privatebin_request_builder("POST", url)?.body::<String>(serde_json::to_string(&post_body).unwrap()).send()?;
-
         let mut rsv: serde_json::Value = response.json()?;
         rsv["bs58key"] = serde_json::Value::String(bs58::encode(paste_passphrase).into_string());
         let status: u32 = rsv.get("status").unwrap().as_u64().unwrap() as u32;

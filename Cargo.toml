@@ -41,3 +41,5 @@ dialoguer = "0.9.0"
 data-url = "0.1.1"
 mime_guess = "2.0.3"
 terminal_size = "0.1.17"
+parse-size = {version = "1.0.0", features = ["std"]}
+log = "0.4.14"
