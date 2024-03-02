@@ -109,13 +109,13 @@ fn handle_post(opts: &Opts) -> PbResult<()> {
     let paste_size: u64 = (paste.paste.len() + paste.attachment.as_ref().unwrap_or(&"".to_owned()).len()) as u64;
     println!("paste size {:?}", paste_size);
     if let Some(max_paste_size) = &opts.size_limit {
-        if(paste_size > *max_paste_size) {
+        if paste_size > *max_paste_size {
             println!("max paste size exceeded");
 
         }
     }
 
-    let res = api.post_paste(&paste, &opts.expire, password, &opts.format, opts.discussion, opts.burn)?;
+    let res = api.post_paste(&paste, password, &opts)?;
 
     if opts.json {
         std::io::stdout().write_all(serde_json::to_string(&res)?.as_bytes())?;
