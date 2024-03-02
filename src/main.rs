@@ -108,7 +108,7 @@ fn handle_post(opts: &Opts) -> PbResult<()> {
 
     let paste_size: u64 = (paste.paste.len() + paste.attachment.as_ref().unwrap_or(&"".to_owned()).len()) as u64;
     println!("paste size {:?}", paste_size);
-    if let Some(max_paste_size) = &opts.wip_arg {
+    if let Some(max_paste_size) = &opts.size_limit {
         if paste_size > *max_paste_size {
             println!("max paste size exceeded");
 
@@ -138,7 +138,7 @@ fn main() -> PbResult<()> {
     // println!("{:?}", opts.wip_arg.clone().unwrap());
 
     // let size = parse_size(size);
-    println!("{:?}", opts.wip_arg);
+    println!("{:?}", opts.size_limit);
 
     let url_has_query = opts.get_url().query().is_some();
     if url_has_query {

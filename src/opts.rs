@@ -28,7 +28,7 @@ pub struct Opts {
     pub expire: String,
 
     #[clap(long, parse(try_from_str = parse_size))]
-    pub wip_arg:  Option<u64>,
+    pub size_limit:  Option<u64>,
 
     #[clap(long)]
     pub json: bool,
