@@ -8,8 +8,8 @@ mod opts;
 use std::io::{Read, Write};
 use clap::{Parser};
 use data_url::{DataUrl};
-
-
+use log::log;
+use parse_size::parse_size;
 use crate::opts::Opts;
 use crate::privatebin::{DecryptedPaste, PasteFormat};
 use crate::error::{PasteError, PbResult};
@@ -20,7 +20,7 @@ fn get_stdin() -> std::io::Result<String> {
     }
     let mut buffer = String::new();
     std::io::stdin().read_to_string(&mut buffer)?;
-    Ok(buffer)
+    return Ok(buffer);
 }
 
 fn create_dataurl(path: &std::ffi::OsStr, data: String) -> String {
@@ -59,14 +59,14 @@ fn handle_get(opts: &Opts) -> PbResult<()> {
         let attachment = content.attachment.as_ref().unwrap();
         let outfile = opts.download.as_ref().unwrap();
 
-        let url = DataUrl::process(attachment)?;
+        let url = DataUrl::process(&attachment)?;
         let (body, _) = url.decode_to_vec().unwrap();
 
         if outfile.exists() && !opts.overwrite {
             return Err(PasteError::FileExists);
         }
 
-        let mut handle = std::fs::File::create(outfile)?;
+        let mut handle = std::fs::File::create(&outfile)?;
 
         handle.write_all(&body)?;
     }
@@ -109,7 +109,7 @@ fn handle_post(opts: &Opts) -> PbResult<()> {
     let paste_size: u64 = (paste.paste.len() + paste.attachment.as_ref().unwrap_or(&"".to_owned()).len()) as u64;
     println!("paste size {:?}", paste_size);
     if let Some(max_paste_size) = &opts.size_limit {
-        if paste_size > *max_paste_size {
+        if(paste_size > *max_paste_size) {
             println!("max paste size exceeded");
 
         }
@@ -124,7 +124,7 @@ fn handle_post(opts: &Opts) -> PbResult<()> {
         url.set_query(Some(&res.id));
         url.set_fragment(Some(&res.bs58key));
         std::io::stdout().write_all(url.to_string().as_bytes())?;
-        writeln!(std::io::stdout())?;
+        writeln!(std::io::stdout(), "")?;
     }
 
     Ok(())

@@ -24,7 +24,7 @@ pub fn get_args() -> Vec<OsString> {
             Err(_) => return
         };
 
-        if line.starts_with('#') {
+        if line.starts_with("#") {
             return;
         }
 

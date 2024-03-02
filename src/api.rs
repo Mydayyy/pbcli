@@ -17,7 +17,7 @@ impl API {
     pub fn new(mut url: Url, opts: Opts) -> Self {
         url.set_fragment(None);
         url.set_query(None);
-        if !url.path().ends_with('/') {
+        if !url.path().ends_with("/") {
             url.set_path(&format!("{}{}", url.path(), "/"))
         }
         Self { base: url, opts }
@@ -63,7 +63,7 @@ impl API {
         let mut request = client.request(Method::from_str(method).unwrap(), url);
         request = request.header("X-Requested-With", "JSONHttpRequest");
 
-        if self.opts.oidc_token_url.is_some() {
+        if let Some(_) = &self.opts.oidc_token_url {
             let access_token = self.get_oidc_access_token()?;
             let auth_header = ["Bearer".into(), access_token].join(" ");
             request = request.header("Authorization", auth_header)
@@ -73,7 +73,7 @@ impl API {
     }
 
     pub fn get_paste(&self, paste_id: &str) -> PbResult<Paste> {
-        let url = reqwest::Url::parse_with_params(self.base.as_str(), [("pasteid", paste_id)])?;
+        let url = reqwest::Url::parse_with_params(&self.base.as_str(), [("pasteid", paste_id)])?;
         let value: serde_json::Value = self.preconfigured_privatebin_request_builder("GET", url)?.send()?.json()?;
         let status: u32 = value.get("status").unwrap().as_u64().unwrap() as u32;
 
@@ -97,7 +97,7 @@ impl API {
 
         let mut post_body = serde_json::json!({
             "v": 2,
-            "adata": [[base64::encode(nonce),base64::encode(kdf_salt),100000,256,128,"aes","gcm","zlib"],format,discussion as u8,burn as u8],
+            "adata": [[base64::encode(&nonce),base64::encode(&kdf_salt),100000,256,128,"aes","gcm","zlib"],format,discussion as u8,burn as u8],
             "ct": "",
             "meta": {
                 "expire": expire
@@ -105,7 +105,7 @@ impl API {
         });
         let adata = post_body.get("adata").unwrap().to_string();
         let encrypted_content = encrypt(&serde_json::to_string(content)?, &paste_passphrase.into(), password, &kdf_salt.into(), &nonce.into(), iterations, &adata)?;
-        post_body["ct"] = base64::encode(encrypted_content).into();
+        post_body["ct"] = base64::encode(&encrypted_content).into();
 
         let url = self.base.clone();
         let response = self.preconfigured_privatebin_request_builder("POST", url)?.body::<String>(serde_json::to_string(&post_body).unwrap()).send()?;

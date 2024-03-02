@@ -86,7 +86,7 @@ pub struct PostPasteResponse {
 
 impl Paste {
     pub fn decrypt(&self, bs58_key: &str) -> PbResult<DecryptedPaste> {
-        self.decrypt_with_password(bs58_key, "")
+        self.decrypt_with_password(&bs58_key, "")
     }
 
     pub fn decrypt_with_password(&self, bs58_key: &str, password: &str) -> PbResult<DecryptedPaste> {
@@ -106,6 +106,6 @@ impl TryFrom<serde_json::Value> for Paste {
 
         paste.adata_str = adata_str;
 
-        Ok(paste)
+        return Ok(paste);
     }
 }
