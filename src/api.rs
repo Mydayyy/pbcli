@@ -1,5 +1,7 @@
+use std::io::IsTerminal;
 use std::process::exit;
 use std::str::FromStr;
+use atty::Stream;
 use rand_chacha::rand_core::{RngCore, SeedableRng};
 use reqwest::{Method, Url};
 use crate::crypto::encrypt;
@@ -111,6 +113,10 @@ impl API {
 
         if let Some(size_limit) = &opts.size_limit {
             if b64_encrpyed_content.len() as u64 > *size_limit {
+                if !std::io::stdin().is_terminal() {
+                    exit(1)
+                }
+
                 let confirmation = dialoguer::Confirm::new()
                     .with_prompt("This paste exceeds your defined size limit. Continue?")
                     .interact()
