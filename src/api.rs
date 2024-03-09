@@ -1,12 +1,9 @@
-use std::io::IsTerminal;
-use std::process::exit;
 use std::str::FromStr;
-use atty::Stream;
 use rand_chacha::rand_core::{RngCore, SeedableRng};
 use reqwest::{Method, Url};
 use crate::crypto::encrypt;
 use crate::{DecryptedPaste};
-use crate::privatebin::{Paste, PasteFormat, PostPasteResponse};
+use crate::privatebin::{Paste, PostPasteResponse};
 use crate::error::{PasteError, PbError, PbResult};
 use crate::opts::Opts;
 use crate::util::check_filesize;
