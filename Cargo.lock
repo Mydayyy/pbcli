@@ -786,7 +786,6 @@ dependencies = [
  "dialoguer",
  "hex-literal",
  "hmac",
- "log",
  "mime_guess",
  "miniz_oxide",
  "parse-size",

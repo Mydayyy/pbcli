@@ -109,10 +109,8 @@ impl API {
 
         let b64_encrpyed_content = base64::encode(&encrypted_content);
 
-        println!("paste ct size {:?}", b64_encrpyed_content.len());
         if let Some(size_limit) = &opts.size_limit {
             if b64_encrpyed_content.len() as u64 > *size_limit {
-                println!("max paste size exceeded");
                 let confirmation = dialoguer::Confirm::new()
                     .with_prompt("This paste exceeds your defined size limit. Continue?")
                     .interact()
