@@ -3,9 +3,10 @@ use rand_chacha::rand_core::{RngCore, SeedableRng};
 use reqwest::{Method, Url};
 use crate::crypto::encrypt;
 use crate::{DecryptedPaste};
-use crate::privatebin::{Paste, PasteFormat, PostPasteResponse};
+use crate::privatebin::{Paste, PostPasteResponse};
 use crate::error::{PasteError, PbError, PbResult};
 use crate::opts::Opts;
+use crate::util::check_filesize;
 
 #[derive()]
 pub struct API {
@@ -84,7 +85,7 @@ impl API {
         }
     }
 
-    pub fn post_paste(&self, content: &DecryptedPaste, expire: &str, password: &str, format: &PasteFormat, discussion: bool, burn: bool) -> PbResult<PostPasteResponse> {
+    pub fn post_paste(&self, content: &DecryptedPaste, password: &str, opts: &Opts) -> PbResult<PostPasteResponse> {
         let mut rng = rand_chacha::ChaCha20Rng::from_entropy();
         let mut paste_passphrase = [0u8; 32];
         let mut kdf_salt = [0u8; 8];
@@ -97,19 +98,24 @@ impl API {
 
         let mut post_body = serde_json::json!({
             "v": 2,
-            "adata": [[base64::encode(&nonce),base64::encode(&kdf_salt),100000,256,128,"aes","gcm","zlib"],format,discussion as u8,burn as u8],
+            "adata": [[base64::encode(&nonce),base64::encode(&kdf_salt),100000,256,128,"aes","gcm","zlib"],opts.format,opts.discussion as u8,opts.burn as u8],
             "ct": "",
             "meta": {
-                "expire": expire
+                "expire": opts.expire
             }
         });
         let adata = post_body.get("adata").unwrap().to_string();
         let encrypted_content = encrypt(&serde_json::to_string(content)?, &paste_passphrase.into(), password, &kdf_salt.into(), &nonce.into(), iterations, &adata)?;
-        post_body["ct"] = base64::encode(&encrypted_content).into();
+
+        let b64_encrpyed_content = base64::encode(&encrypted_content);
+
+        check_filesize(b64_encrpyed_content.len() as u64, opts.size_limit);
+
+        post_body["ct"] = b64_encrpyed_content.into();
+
 
         let url = self.base.clone();
         let response = self.preconfigured_privatebin_request_builder("POST", url)?.body::<String>(serde_json::to_string(&post_body).unwrap()).send()?;
-
         let mut rsv: serde_json::Value = response.json()?;
         rsv["bs58key"] = serde_json::Value::String(bs58::encode(paste_passphrase).into_string());
         let status: u32 = rsv.get("status").unwrap().as_u64().unwrap() as u32;

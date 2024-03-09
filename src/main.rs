@@ -4,6 +4,7 @@ mod api;
 mod error;
 mod config;
 mod opts;
+mod util;
 
 use std::io::{Read, Write};
 use clap::{Parser};
@@ -11,6 +12,7 @@ use data_url::{DataUrl};
 use crate::opts::Opts;
 use crate::privatebin::{DecryptedPaste, PasteFormat};
 use crate::error::{PasteError, PbResult};
+use crate::util::check_filesize;
 
 fn get_stdin() -> std::io::Result<String> {
     if atty::is(atty::Stream::Stdin) {
@@ -96,6 +98,9 @@ fn handle_post(opts: &Opts) -> PbResult<()> {
         }
 
         let mut handle = std::fs::File::open(path)?;
+        let metadata = handle.metadata()?;
+        check_filesize(metadata.len(), opts.size_limit);
+
         let mut data = Vec::new();
         handle.read_to_end(&mut data)?;
         let b64_data = base64::encode(data);
@@ -104,7 +109,7 @@ fn handle_post(opts: &Opts) -> PbResult<()> {
         paste.attachment_name = Some(path.file_name().ok_or(PasteError::NotAFile)?.to_string_lossy().to_string());
     }
 
-    let res = api.post_paste(&paste, &opts.expire, password, &opts.format, opts.discussion, opts.burn)?;
+    let res = api.post_paste(&paste, password, &opts)?;
 
     if opts.json {
         std::io::stdout().write_all(serde_json::to_string(&res)?.as_bytes())?;
