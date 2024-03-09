@@ -9,6 +9,7 @@ use crate::{DecryptedPaste};
 use crate::privatebin::{Paste, PasteFormat, PostPasteResponse};
 use crate::error::{PasteError, PbError, PbResult};
 use crate::opts::Opts;
+use crate::util::check_filesize;
 
 #[derive()]
 pub struct API {
@@ -111,22 +112,7 @@ impl API {
 
         let b64_encrpyed_content = base64::encode(&encrypted_content);
 
-        if let Some(size_limit) = &opts.size_limit {
-            if b64_encrpyed_content.len() as u64 > *size_limit {
-                if !std::io::stdin().is_terminal() {
-                    exit(1)
-                }
-
-                let confirmation = dialoguer::Confirm::new()
-                    .with_prompt("This paste exceeds your defined size limit. Continue?")
-                    .interact()
-                    .unwrap();
-
-                if !confirmation {
-                    exit(1)
-                }
-            }
-        }
+        check_filesize(b64_encrpyed_content.len() as u64, opts.size_limit);
 
         post_body["ct"] = b64_encrpyed_content.into();
 
