@@ -28,6 +28,7 @@ pub struct Opts {
     pub expire: String,
 
     #[clap(long, parse(try_from_str = parse_size))]
+    #[clap(help("Prompt if the paste exceeds the given size. Fail in non-interactive environments."))]
     pub size_limit:  Option<u64>,
 
     #[clap(long)]

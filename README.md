@@ -80,7 +80,7 @@ echo 'TestPaste' | pbcli --host https://privatebin.net/ --burn
 ---
 #### CLI Help:
 ```
-pbcli 2.2.0
+pbcli 2.3.0
 
 Mydayyy <dev@mydayyy.eu>
 
@@ -104,12 +104,13 @@ OPTIONS:
     -h, --help                               Print help information
         --host <HOST>                        
         --json                               
-        --oidc-client-id <OIDC_CLIENT_ID>    
-        --oidc-password <OIDC_PASSWORD>      
-        --oidc-token-url <OIDC_TOKEN_URL>    
-        --oidc-username <OIDC_USERNAME>      
-        --overwrite                          
+        --oidc-client-id <OIDC_CLIENT_ID>    client id to send to the token endpoint
+        --oidc-password <OIDC_PASSWORD>      password to send to the token endpoint
+        --oidc-token-url <OIDC_TOKEN_URL>    oidc token endpoint from which to obtain an access token
+        --oidc-username <OIDC_USERNAME>      username to send to the token endpoint
+        --overwrite                          overwrite the file given with --download if it already exists
         --password <PASSWORD>                
+        --size-limit <SIZE_LIMIT>            Prompt if the paste exceeds the given size. Fail in non-interactive environments
         --upload <FILE>                      
     -V, --version                            Print version information
 ```
