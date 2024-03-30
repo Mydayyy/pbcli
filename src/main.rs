@@ -1,18 +1,12 @@
-mod crypto;
-mod privatebin;
-mod api;
-mod error;
-mod config;
-mod opts;
-mod util;
 
 use std::io::{Read, Write};
 use clap::{Parser};
 use data_url::{DataUrl};
-use crate::opts::Opts;
-use crate::privatebin::{DecryptedPaste, PasteFormat};
-use crate::error::{PasteError, PbResult};
-use crate::util::check_filesize;
+use pbcli::opts::Opts;
+use pbcli::privatebin::{DecryptedPaste, PasteFormat};
+use pbcli::error::{PasteError, PbResult};
+use pbcli::util::check_filesize;
+use pbcli::api::API;
 
 fn get_stdin() -> std::io::Result<String> {
     if atty::is(atty::Stream::Stdin) {
@@ -33,7 +27,7 @@ fn handle_get(opts: &Opts) -> PbResult<()> {
     let paste_id = opts.get_url().query().unwrap();
     let key = opts.get_url().fragment().ok_or(PasteError::MissingDecryptionKey)?;
 
-    let api = api::API::new(url.clone(), opts.clone());
+    let api = API::new(url.clone(), opts.clone());
     let paste = api.get_paste(paste_id)?;
 
     let content: DecryptedPaste;
@@ -79,7 +73,7 @@ fn handle_get(opts: &Opts) -> PbResult<()> {
 fn handle_post(opts: &Opts) -> PbResult<()> {
     let url = opts.get_url();
     let stdin = get_stdin()?;
-    let api = api::API::new(url.clone(), opts.clone());
+    let api = API::new(url.clone(), opts.clone());
 
     let password = match &opts.password {
         None => "",
@@ -125,7 +119,7 @@ fn handle_post(opts: &Opts) -> PbResult<()> {
 }
 
 fn main() -> PbResult<()> {
-    let args = crate::config::get_args();
+    let args = pbcli::config::get_args();
     let opts: Opts = Opts::parse_from(args);
 
     let url_has_query = opts.get_url().query().is_some();
