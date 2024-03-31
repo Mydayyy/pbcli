@@ -2,7 +2,6 @@ use std::io::IsTerminal;
 use std::process::exit;
 use std::sync::Mutex;
 
-
 pub fn check_filesize(len: u64, opts_size_limt: Option<u64>) {
     static MUTEX_IS_CONFIRMED: Mutex<bool> = Mutex::new(false);
     let mut user_confirmed_size = MUTEX_IS_CONFIRMED.lock().unwrap();
@@ -12,7 +11,7 @@ pub fn check_filesize(len: u64, opts_size_limt: Option<u64>) {
     }
 
     if let Some(size_limit) = opts_size_limt {
-        if len  > size_limit {
+        if len > size_limit {
             if !std::io::stdin().is_terminal() {
                 exit(1)
             }

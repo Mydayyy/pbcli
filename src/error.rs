@@ -1,9 +1,9 @@
-use std::fmt::{Formatter};
-use std::fmt;
 use base64::DecodeError;
 use data_url::DataUrlError;
 use miniz_oxide::inflate::TINFLStatus;
 use serde_json::Error;
+use std::fmt;
+use std::fmt::Formatter;
 
 pub type PbError = PasteError;
 pub type PbResult<T> = std::result::Result<T, PbError>;
@@ -35,7 +35,6 @@ pub enum PasteError {
     OidcBadRequest(serde_json::Value),
 }
 
-
 impl std::error::Error for PasteError {}
 
 impl fmt::Display for PasteError {
@@ -44,8 +43,12 @@ impl fmt::Display for PasteError {
             PasteError::CipherNotImplemented {
                 cipher_algo,
                 cipher_mode,
-                keysize
-            } => write!(f, "Cipher not implemented algo: {} mode: {} keysize: {}", cipher_algo, cipher_mode, keysize),
+                keysize,
+            } => write!(
+                f,
+                "Cipher not implemented algo: {} mode: {} keysize: {}",
+                cipher_algo, cipher_mode, keysize
+            ),
             PasteError::Json(r) => r.fmt(f),
             PasteError::Request(r) => r.fmt(f),
             PasteError::Io(r) => r.fmt(f),
@@ -62,7 +65,9 @@ impl fmt::Display for PasteError {
             PasteError::InvalidAttachment(err) => write!(f, "Invalid attachment: {:?}", err),
             PasteError::FileExists => write!(f, "File already exists. Use --overwrite to force"),
             PasteError::NotAFile => write!(f, "Given path is not a file"),
-            PasteError::InvalidTokenType(token_type) => write!(f, "Invalid token type: {}", token_type),
+            PasteError::InvalidTokenType(token_type) => {
+                write!(f, "Invalid token type: {}", token_type)
+            }
             PasteError::OidcBadRequest(json) => write!(f, "{}", json),
         }
     }
