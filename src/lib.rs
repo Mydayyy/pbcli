@@ -5,6 +5,7 @@ pub mod error;
 pub mod opts;
 pub mod privatebin;
 pub mod util;
+mod uniffi_custom_types;
 
 pub use api::API;
 pub use error::{PasteError, PbResult};
