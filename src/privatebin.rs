@@ -20,7 +20,7 @@ pub enum CompressionType {
     Zlib,
 }
 
-#[derive(Default, clap::ArgEnum, Deserialize, Debug, Serialize, Clone, uniffi::Enum)]
+#[derive(Default, clap::ArgEnum, Deserialize, Debug, Serialize, Clone, Copy, uniffi::Enum)]
 pub enum PasteFormat {
     #[default]
     #[serde(rename = "plaintext")]
