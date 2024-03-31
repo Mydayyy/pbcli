@@ -11,3 +11,5 @@ pub use error::{PasteError, PbResult};
 pub use opts::Opts;
 pub use privatebin::{DecryptedPaste, PasteFormat};
 pub use util::check_filesize;
+
+uniffi::setup_scaffolding!();
