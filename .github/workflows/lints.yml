@@ -12,8 +12,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-      with:
-        ref: ${{ github.head_ref }}
 
     - uses: actions-rs/toolchain@v1
       with:
