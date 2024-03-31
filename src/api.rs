@@ -1,12 +1,12 @@
-use std::str::FromStr;
-use rand_chacha::rand_core::{RngCore, SeedableRng};
-use reqwest::{Method, Url};
 use crate::crypto::encrypt;
-use crate::{DecryptedPaste};
-use crate::privatebin::{Paste, PostPasteResponse};
 use crate::error::{PasteError, PbError, PbResult};
 use crate::opts::Opts;
+use crate::privatebin::{Paste, PostPasteResponse};
 use crate::util::check_filesize;
+use crate::DecryptedPaste;
+use rand_chacha::rand_core::{RngCore, SeedableRng};
+use reqwest::{Method, Url};
+use std::str::FromStr;
 
 #[derive()]
 pub struct API {
@@ -18,7 +18,7 @@ impl API {
     pub fn new(mut url: Url, opts: Opts) -> Self {
         url.set_fragment(None);
         url.set_query(None);
-        if !url.path().ends_with("/") {
+        if !url.path().ends_with('/') {
             url.set_path(&format!("{}{}", url.path(), "/"))
         }
         Self { base: url, opts }
@@ -48,23 +48,36 @@ impl API {
 
         let access_token_response: serde_json::Value = response.json()?;
 
-        let token_type = access_token_response.get("token_type").unwrap().as_str().unwrap();
+        let token_type = access_token_response
+            .get("token_type")
+            .unwrap()
+            .as_str()
+            .unwrap();
         if !token_type.eq_ignore_ascii_case("bearer") {
             return Err(PbError::InvalidTokenType(token_type.to_string()));
         }
 
-        let token: String = access_token_response.get("access_token").unwrap().as_str().unwrap().to_string();
+        let token: String = access_token_response
+            .get("access_token")
+            .unwrap()
+            .as_str()
+            .unwrap()
+            .to_string();
 
         Ok(token)
     }
 
-    fn preconfigured_privatebin_request_builder(&self, method: &str, url: Url) -> PbResult<reqwest::blocking::RequestBuilder> {
+    fn preconfigured_privatebin_request_builder(
+        &self,
+        method: &str,
+        url: Url,
+    ) -> PbResult<reqwest::blocking::RequestBuilder> {
         let client = reqwest::blocking::Client::builder().build()?;
 
         let mut request = client.request(Method::from_str(method).unwrap(), url);
         request = request.header("X-Requested-With", "JSONHttpRequest");
 
-        if let Some(_) = &self.opts.oidc_token_url {
+        if self.opts.oidc_token_url.is_some() {
             let access_token = self.get_oidc_access_token()?;
             let auth_header = ["Bearer".into(), access_token].join(" ");
             request = request.header("Authorization", auth_header)
@@ -74,8 +87,11 @@ impl API {
     }
 
     pub fn get_paste(&self, paste_id: &str) -> PbResult<Paste> {
-        let url = reqwest::Url::parse_with_params(&self.base.as_str(), [("pasteid", paste_id)])?;
-        let value: serde_json::Value = self.preconfigured_privatebin_request_builder("GET", url)?.send()?.json()?;
+        let url = reqwest::Url::parse_with_params(self.base.as_str(), [("pasteid", paste_id)])?;
+        let value: serde_json::Value = self
+            .preconfigured_privatebin_request_builder("GET", url)?
+            .send()?
+            .json()?;
         let status: u32 = value.get("status").unwrap().as_u64().unwrap() as u32;
 
         match status {
@@ -85,7 +101,12 @@ impl API {
         }
     }
 
-    pub fn post_paste(&self, content: &DecryptedPaste, password: &str, opts: &Opts) -> PbResult<PostPasteResponse> {
+    pub fn post_paste(
+        &self,
+        content: &DecryptedPaste,
+        password: &str,
+        opts: &Opts,
+    ) -> PbResult<PostPasteResponse> {
         let mut rng = rand_chacha::ChaCha20Rng::from_entropy();
         let mut paste_passphrase = [0u8; 32];
         let mut kdf_salt = [0u8; 8];
@@ -98,24 +119,34 @@ impl API {
 
         let mut post_body = serde_json::json!({
             "v": 2,
-            "adata": [[base64::encode(&nonce),base64::encode(&kdf_salt),100000,256,128,"aes","gcm","zlib"],opts.format,opts.discussion as u8,opts.burn as u8],
+            "adata": [[base64::encode(nonce),base64::encode(kdf_salt),100000,256,128,"aes","gcm","zlib"],opts.format,opts.discussion as u8,opts.burn as u8],
             "ct": "",
             "meta": {
                 "expire": opts.expire
             }
         });
         let adata = post_body.get("adata").unwrap().to_string();
-        let encrypted_content = encrypt(&serde_json::to_string(content)?, &paste_passphrase.into(), password, &kdf_salt.into(), &nonce.into(), iterations, &adata)?;
+        let encrypted_content = encrypt(
+            &serde_json::to_string(content)?,
+            &paste_passphrase.into(),
+            password,
+            &kdf_salt,
+            &nonce,
+            iterations,
+            &adata,
+        )?;
 
-        let b64_encrpyed_content = base64::encode(&encrypted_content);
+        let b64_encrpyed_content = base64::encode(encrypted_content);
 
         check_filesize(b64_encrpyed_content.len() as u64, opts.size_limit);
 
         post_body["ct"] = b64_encrpyed_content.into();
 
-
         let url = self.base.clone();
-        let response = self.preconfigured_privatebin_request_builder("POST", url)?.body::<String>(serde_json::to_string(&post_body).unwrap()).send()?;
+        let response = self
+            .preconfigured_privatebin_request_builder("POST", url)?
+            .body::<String>(serde_json::to_string(&post_body).unwrap())
+            .send()?;
         let mut rsv: serde_json::Value = response.json()?;
         rsv["bs58key"] = serde_json::Value::String(bs58::encode(paste_passphrase).into_string());
         let status: u32 = rsv.get("status").unwrap().as_u64().unwrap() as u32;

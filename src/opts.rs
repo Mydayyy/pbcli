@@ -1,14 +1,12 @@
+use crate::PasteFormat;
+use clap::Parser;
 use parse_size::parse_size;
 use url::Url;
-use crate::PasteFormat;
-use clap::{Parser};
 
-const ABOUT: &str =
-    "pbcli is a command line client which allows to upload and download
+const ABOUT: &str = "pbcli is a command line client which allows to upload and download
 pastes from privatebin directly from the command line.
 
 Project home page: https://github.com/Mydayyy/pbcli";
-
 
 #[derive(Debug, Parser, Clone)]
 #[clap(setting = clap::AppSettings::AllArgsOverrideSelf, version = env ! ("CARGO_PKG_VERSION"), author = "Mydayyy <dev@mydayyy.eu>", about = ABOUT)]
@@ -28,8 +26,10 @@ pub struct Opts {
     pub expire: String,
 
     #[clap(long, parse(try_from_str = parse_size))]
-    #[clap(help("Prompt if the paste exceeds the given size. Fail in non-interactive environments."))]
-    pub size_limit:  Option<u64>,
+    #[clap(help(
+        "Prompt if the paste exceeds the given size. Fail in non-interactive environments."
+    ))]
+    pub size_limit: Option<u64>,
 
     #[clap(long)]
     pub json: bool,
@@ -69,6 +69,8 @@ pub struct Opts {
 
 impl Opts {
     pub fn get_url(&self) -> &Url {
-        self.url.as_ref().unwrap_or_else(|| self.host.as_ref().unwrap())
+        self.url
+            .as_ref()
+            .unwrap_or_else(|| self.host.as_ref().unwrap())
     }
 }

@@ -1,19 +1,18 @@
 use std::env;
-use std::ffi::{ OsString};
+use std::ffi::OsString;
 use std::io::BufRead;
 
 pub fn get_args() -> Vec<OsString> {
     let mut env_args = std::env::args_os();
 
-
     let path = match env::var_os("PBCLI_CONFIG_PATH") {
         None => return env_args.collect(),
-        Some(path) => path
+        Some(path) => path,
     };
 
     let handle = match std::fs::File::open(path) {
         Ok(file) => file,
-        Err(_) => return env_args.collect() // TODO: Raise error
+        Err(_) => return env_args.collect(), // TODO: Raise error
     };
 
     let reader = std::io::BufReader::new(handle);
@@ -21,10 +20,10 @@ pub fn get_args() -> Vec<OsString> {
     reader.lines().for_each(|line| {
         let line = match line {
             Ok(line) => line.trim().to_owned(),
-            Err(_) => return
+            Err(_) => return,
         };
 
-        if line.starts_with("#") {
+        if line.starts_with('#') {
             return;
         }
 

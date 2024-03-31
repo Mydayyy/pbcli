@@ -1,12 +1,11 @@
-
-use std::io::{Read, Write};
-use clap::{Parser};
-use data_url::{DataUrl};
-use pbcli::opts::Opts;
-use pbcli::privatebin::{DecryptedPaste, PasteFormat};
-use pbcli::error::{PasteError, PbResult};
-use pbcli::util::check_filesize;
+use clap::Parser;
+use data_url::DataUrl;
 use pbcli::api::API;
+use pbcli::error::{PasteError, PbResult};
+use pbcli::opts::Opts;
+use pbcli::privatebin::DecryptedPaste;
+use pbcli::util::check_filesize;
+use std::io::{Read, Write};
 
 fn get_stdin() -> std::io::Result<String> {
     if atty::is(atty::Stream::Stdin) {
@@ -14,18 +13,23 @@ fn get_stdin() -> std::io::Result<String> {
     }
     let mut buffer = String::new();
     std::io::stdin().read_to_string(&mut buffer)?;
-    return Ok(buffer);
+    Ok(buffer)
 }
 
 fn create_dataurl(path: &std::ffi::OsStr, data: String) -> String {
-    let mime = mime_guess::from_path(path).first().unwrap_or(mime_guess::mime::APPLICATION_OCTET_STREAM);
+    let mime = mime_guess::from_path(path)
+        .first()
+        .unwrap_or(mime_guess::mime::APPLICATION_OCTET_STREAM);
     format!("data:{};base64,{}", mime.essence_str(), data)
 }
 
 fn handle_get(opts: &Opts) -> PbResult<()> {
     let url = opts.get_url();
     let paste_id = opts.get_url().query().unwrap();
-    let key = opts.get_url().fragment().ok_or(PasteError::MissingDecryptionKey)?;
+    let key = opts
+        .get_url()
+        .fragment()
+        .ok_or(PasteError::MissingDecryptionKey)?;
 
     let api = API::new(url.clone(), opts.clone());
     let paste = api.get_paste(paste_id)?;
@@ -42,7 +46,8 @@ fn handle_get(opts: &Opts) -> PbResult<()> {
                     return Err(err);
                 }
 
-                let password = dialoguer::Password::new().with_prompt("Enter password")
+                let password = dialoguer::Password::new()
+                    .with_prompt("Enter password")
                     .interact()?;
                 content = paste.decrypt_with_password(key, &password)?;
             }
@@ -53,14 +58,14 @@ fn handle_get(opts: &Opts) -> PbResult<()> {
         let attachment = content.attachment.as_ref().unwrap();
         let outfile = opts.download.as_ref().unwrap();
 
-        let url = DataUrl::process(&attachment)?;
+        let url = DataUrl::process(attachment)?;
         let (body, _) = url.decode_to_vec().unwrap();
 
         if outfile.exists() && !opts.overwrite {
             return Err(PasteError::FileExists);
         }
 
-        let mut handle = std::fs::File::create(&outfile)?;
+        let mut handle = std::fs::File::create(outfile)?;
 
         handle.write_all(&body)?;
     }
@@ -75,10 +80,7 @@ fn handle_post(opts: &Opts) -> PbResult<()> {
     let stdin = get_stdin()?;
     let api = API::new(url.clone(), opts.clone());
 
-    let password = match &opts.password {
-        None => "",
-        Some(password) => password
-    };
+    let password = &opts.password.clone().unwrap_or_default();
 
     let mut paste = DecryptedPaste {
         paste: stdin,
@@ -100,10 +102,15 @@ fn handle_post(opts: &Opts) -> PbResult<()> {
         let b64_data = base64::encode(data);
 
         paste.attachment = Some(create_dataurl(path.as_os_str(), b64_data));
-        paste.attachment_name = Some(path.file_name().ok_or(PasteError::NotAFile)?.to_string_lossy().to_string());
+        paste.attachment_name = Some(
+            path.file_name()
+                .ok_or(PasteError::NotAFile)?
+                .to_string_lossy()
+                .to_string(),
+        );
     }
 
-    let res = api.post_paste(&paste, password, &opts)?;
+    let res = api.post_paste(&paste, password, opts)?;
 
     if opts.json {
         std::io::stdout().write_all(serde_json::to_string(&res)?.as_bytes())?;
@@ -112,7 +119,7 @@ fn handle_post(opts: &Opts) -> PbResult<()> {
         url.set_query(Some(&res.id));
         url.set_fragment(Some(&res.bs58key));
         std::io::stdout().write_all(url.to_string().as_bytes())?;
-        writeln!(std::io::stdout(), "")?;
+        writeln!(std::io::stdout())?;
     }
 
     Ok(())

@@ -1,10 +1,9 @@
-use std::io::ErrorKind;
+use crate::error::PbResult;
 use serde::Deserialize;
 use serde::Serialize;
 use serde_json::Value;
 use serde_with::skip_serializing_none;
-use crate::error::PbResult;
-
+use std::io::ErrorKind;
 
 #[derive(Deserialize, Debug, Serialize)]
 pub enum CompressionType {
@@ -86,10 +85,14 @@ pub struct PostPasteResponse {
 
 impl Paste {
     pub fn decrypt(&self, bs58_key: &str) -> PbResult<DecryptedPaste> {
-        self.decrypt_with_password(&bs58_key, "")
+        self.decrypt_with_password(bs58_key, "")
     }
 
-    pub fn decrypt_with_password(&self, bs58_key: &str, password: &str) -> PbResult<DecryptedPaste> {
+    pub fn decrypt_with_password(
+        &self,
+        bs58_key: &str,
+        password: &str,
+    ) -> PbResult<DecryptedPaste> {
         let key = bs58::decode(bs58_key).into_vec()?;
         crate::crypto::decrypt_with_password(self, &key, password)
     }
@@ -99,13 +102,16 @@ impl TryFrom<serde_json::Value> for Paste {
     type Error = crate::error::PbError;
 
     fn try_from(value: Value) -> PbResult<Self> {
-        let adata = value.get("adata").ok_or(std::io::Error::new(ErrorKind::InvalidData, "Cannot get adata in try_from"))?;
+        let adata = value.get("adata").ok_or(std::io::Error::new(
+            ErrorKind::InvalidData,
+            "Cannot get adata in try_from",
+        ))?;
         let adata_str = serde_json::to_string(adata)?;
 
         let mut paste = serde_json::from_value::<Paste>(value)?;
 
         paste.adata_str = adata_str;
 
-        return Ok(paste);
+        Ok(paste)
     }
 }
