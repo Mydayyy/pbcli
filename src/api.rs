@@ -130,8 +130,8 @@ impl API {
             &serde_json::to_string(content)?,
             &paste_passphrase.into(),
             password,
-            &kdf_salt.into(),
-            &nonce.into(),
+            &kdf_salt,
+            &nonce,
             iterations,
             &adata,
         )?;

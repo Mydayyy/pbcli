@@ -38,8 +38,8 @@ pub fn encrypt(
     content: &str,
     key: &Vec<u8>,
     password: &str,
-    salt: &Vec<u8>,
-    nonce: &Vec<u8>,
+    salt: &[u8],
+    nonce: &[u8],
     iterations: u32,
     aad: &str,
 ) -> PbResult<Vec<u8>> {
