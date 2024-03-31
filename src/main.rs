@@ -3,7 +3,7 @@ use data_url::DataUrl;
 use pbcli::api::API;
 use pbcli::error::{PasteError, PbResult};
 use pbcli::opts::Opts;
-use pbcli::privatebin::{DecryptedPaste};
+use pbcli::privatebin::DecryptedPaste;
 use pbcli::util::check_filesize;
 use std::io::{Read, Write};
 
@@ -80,10 +80,7 @@ fn handle_post(opts: &Opts) -> PbResult<()> {
     let stdin = get_stdin()?;
     let api = API::new(url.clone(), opts.clone());
 
-    let password = match &opts.password {
-        None => "",
-        Some(password) => password,
-    };
+    let password = &opts.password.clone().unwrap_or_default();
 
     let mut paste = DecryptedPaste {
         paste: stdin,
