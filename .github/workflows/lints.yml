@@ -6,6 +6,10 @@ on:
     branches:
       - main
 
+# Make sure CI fails on all warnings, including Clippy lints
+env:
+  RUSTFLAGS: "-Dwarnings"
+
 jobs:
   linting:
     runs-on: ubuntu-latest
