@@ -22,6 +22,7 @@ pub struct Opts {
     #[clap(long, arg_enum, default_value = "plaintext")]
     pub format: PasteFormat,
 
+    #[uniffi(default = "1week")]
     #[clap(long, default_value = "1week")]
     pub expire: String,
 
@@ -31,10 +32,13 @@ pub struct Opts {
     ))]
     pub size_limit: Option<u64>,
 
+    #[uniffi(default = false)]
     #[clap(long)]
     pub json: bool,
+    #[uniffi(default = false)]
     #[clap(long, conflicts_with = "discussion")]
     pub burn: bool,
+    #[uniffi(default = false)]
     #[clap(long)]
     pub discussion: bool,
 
