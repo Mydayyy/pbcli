@@ -27,13 +27,8 @@ jobs:
 
     - name: Run rust clippy
       run: |
-        cargo +nightly clippy --fix
+        cargo +nightly clippy --all-targets --all-features
 
     - name: Run rust fmt
       run: |
-        cargo +nightly fmt
-
-    - name: Commit
-      uses: stefanzweifel/git-auto-commit-action@v5
-      with:
-        commit_message: Apply clippy and rustfmt changes
+        cargo +nightly fmt --check
