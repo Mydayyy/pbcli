@@ -8,7 +8,7 @@ pastes from privatebin directly from the command line.
 
 Project home page: https://github.com/Mydayyy/pbcli";
 
-#[derive(Debug, Parser, Clone)]
+#[derive(Debug, Parser, Clone, uniffi::Record)]
 #[clap(setting = clap::AppSettings::AllArgsOverrideSelf, version = env ! ("CARGO_PKG_VERSION"), author = "Mydayyy <dev@mydayyy.eu>", about = ABOUT)]
 #[clap(term_width(if let Some((terminal_size::Width(w), _)) = terminal_size::terminal_size() { w as usize } else { 120 }))]
 #[clap(rename_all = "kebab-case")]
