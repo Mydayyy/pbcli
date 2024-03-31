@@ -45,7 +45,7 @@ data-url = "0.1.1"
 mime_guess = "2.0.3"
 terminal_size = "0.1.17"
 parse-size = {version = "1.0.0", features = ["std"]}
-uniffi = "0.27"
+uniffi = { version = "0.26.1", features = ["cli"] }
 
 [build-dependencies]
 uniffi = {  features = [ "build" ] }
