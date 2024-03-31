@@ -1,0 +1,39 @@
+name: CI:clippy+rustfmt
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  linting:
+    runs-on: ubuntu-latest
+
+    permissions:
+      # Give the default GITHUB_TOKEN write permission to commit and push the changed files back to the repository.
+      contents: write
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        ref: ${{ github.head_ref }}
+
+    - uses: actions-rs/toolchain@v1
+      with:
+        toolchain: nightly
+        profile: minimal
+        components: rustfmt, clippy
+
+    - name: Run rust clippy
+      run: |
+        cargo +nightly clippy --fix
+
+    - name: Run rust fmt
+      run: |
+        cargo +nightly fmt
+
+    - name: Commit
+      uses: stefanzweifel/git-auto-commit-action@v5
+      with:
+        commit_message: Apply clippy and rustfmt changes
