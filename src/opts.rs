@@ -16,6 +16,7 @@ pub struct Opts {
     #[clap(required_unless_present("host"), parse(try_from_str))]
     pub url: Option<Url>,
 
+    #[uniffi(default = None)]
     #[clap(long, parse(try_from_str))]
     pub host: Option<Url>,
 
@@ -26,6 +27,7 @@ pub struct Opts {
     #[clap(long, default_value = "1week")]
     pub expire: String,
 
+    #[uniffi(default = None)]
     #[clap(long, parse(try_from_str = parse_size))]
     #[clap(help(
         "Prompt if the paste exceeds the given size. Fail in non-interactive environments."
@@ -42,30 +44,38 @@ pub struct Opts {
     #[clap(long)]
     pub discussion: bool,
 
+    #[uniffi(default = None)]
     #[clap(long, parse(from_os_str), value_name = "FILE")]
     pub download: Option<std::path::PathBuf>,
+    #[uniffi(default = false)]
     #[clap(long)]
     #[clap(help("overwrite the file given with --download if it already exists"))]
     pub overwrite: bool,
 
+    #[uniffi(default = None)]
     #[clap(long, parse(from_os_str), value_name = "FILE")]
     pub upload: Option<std::path::PathBuf>,
 
+    #[uniffi(default = None)]
     #[clap(long)]
     pub password: Option<String>,
 
+    #[uniffi(default = None)]
     #[clap(long, requires_all(& ["oidc-client-id", "oidc-username", "oidc-password"]))]
     #[clap(help("oidc token endpoint from which to obtain an access token"))]
     pub oidc_token_url: Option<String>,
 
+    #[uniffi(default = None)]
     #[clap(long)]
     #[clap(help("client id to send to the token endpoint"))]
     pub oidc_client_id: Option<String>,
 
+    #[uniffi(default = None)]
     #[clap(long)]
     #[clap(help("username to send to the token endpoint"))]
     pub oidc_username: Option<String>,
 
+    #[uniffi(default = None)]
     #[clap(long)]
     #[clap(help("password to send to the token endpoint"))]
     pub oidc_password: Option<String>,
