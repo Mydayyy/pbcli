@@ -83,6 +83,31 @@ pub struct PostPasteResponse {
     pub bs58key: String,
 }
 
+impl PostPasteResponse {
+    /// Return full paste url, i.e (base + ?id + #bs58key)
+    pub fn to_url(&self, base: &url::Url) -> url::Url {
+        let mut url = base.clone();
+        url.set_query(Some(&self.id));
+        url.set_fragment(Some(&self.bs58key));
+        url
+    }
+    /// Return url that can be used to delete paste
+    pub fn to_delete_url(&self, base: &url::Url) -> url::Url {
+        let mut delete_url = base.clone();
+        delete_url
+            .query_pairs_mut()
+            .append_pair("pasteid", &self.id)
+            .append_pair("deletetoken", &self.deletetoken);
+        delete_url
+    }
+    pub fn to_json(&self) -> String {
+        serde_json::to_string(&self).unwrap()
+    }
+    pub fn is_success(&self) -> bool {
+        self.status == 0
+    }
+}
+
 impl Paste {
     pub fn decrypt(&self, bs58_key: &str) -> PbResult<DecryptedPaste> {
         self.decrypt_with_password(bs58_key, "")
