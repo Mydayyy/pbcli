@@ -182,6 +182,7 @@ pub struct PostPasteResponse {
     pub bs58key: String,
 }
 
+#[uniffi::export]
 impl PostPasteResponse {
     /// Return full paste url, i.e (base + ?id + #bs58key)
     pub fn to_paste_url(&self) -> url::Url {
