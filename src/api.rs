@@ -149,6 +149,7 @@ impl API {
             .send()?;
         let mut rsv: serde_json::Value = response.json()?;
         rsv["bs58key"] = serde_json::Value::String(bs58::encode(paste_passphrase).into_string());
+        rsv["baseurl"] = serde_json::Value::String(self.base.to_string());
         let status: u32 = rsv.get("status").unwrap().as_u64().unwrap() as u32;
 
         match status {

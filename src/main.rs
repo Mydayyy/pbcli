@@ -117,15 +117,15 @@ fn handle_post(opts: &Opts) -> PbResult<()> {
         let mut output: Value = serde_json::to_value(res.clone())?;
         output.as_object_mut().unwrap().insert(
             String::from("pasteurl"),
-            Value::String(res.to_url(api.base()).to_string())
+            Value::String(res.to_paste_url().to_string())
         );
         output.as_object_mut().unwrap().insert(
             String::from("deleteurl"),
-            Value::String(res.to_delete_url(api.base()).to_string())
+            Value::String(res.to_delete_url().to_string())
         );
         std::io::stdout().write_all(output.to_string().as_bytes())?;
     } else {
-        std::io::stdout().write_all(res.to_url(api.base()).as_str().as_bytes())?;
+        std::io::stdout().write_all(res.to_paste_url().as_str().as_bytes())?;
         writeln!(std::io::stdout())?;
     }
 

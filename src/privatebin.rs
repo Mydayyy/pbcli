@@ -80,20 +80,21 @@ pub struct PostPasteResponse {
     pub id: String,
     pub status: u32,
     pub url: String,
+    pub baseurl: String,
     pub bs58key: String,
 }
 
 impl PostPasteResponse {
     /// Return full paste url, i.e (base + ?id + #bs58key)
-    pub fn to_url(&self, base: &url::Url) -> url::Url {
-        let mut url = base.clone();
-        url.set_query(Some(&self.id));
-        url.set_fragment(Some(&self.bs58key));
-        url
+    pub fn to_paste_url(&self) -> url::Url {
+        let mut paste_url: url::Url = self.baseurl.parse().expect("Proper baseurl should be set");
+        paste_url.set_query(Some(&self.id));
+        paste_url.set_fragment(Some(&self.bs58key));
+        paste_url
     }
     /// Return url that can be used to delete paste
-    pub fn to_delete_url(&self, base: &url::Url) -> url::Url {
-        let mut delete_url = base.clone();
+    pub fn to_delete_url(&self) -> url::Url {
+        let mut delete_url: url::Url = self.baseurl.parse().expect("Proper baseurl should be set");
         delete_url
             .query_pairs_mut()
             .append_pair("pasteid", &self.id)
