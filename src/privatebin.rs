@@ -74,7 +74,7 @@ pub struct DecryptedPaste {
     pub attachment_name: Option<String>,
 }
 
-#[derive(Deserialize, Debug, Serialize)]
+#[derive(Deserialize, Debug, Serialize, Clone)]
 pub struct PostPasteResponse {
     pub deletetoken: String,
     pub id: String,
@@ -100,7 +100,7 @@ impl PostPasteResponse {
             .append_pair("deletetoken", &self.deletetoken);
         delete_url
     }
-    pub fn to_json(&self) -> String {
+    pub fn to_json_string(&self) -> String {
         serde_json::to_string(&self).unwrap()
     }
     pub fn is_success(&self) -> bool {
