@@ -40,16 +40,21 @@ precedence. To avoid specifying the host / url everytime you can
 take advantage of a config file as described [here](#Configuration-File).
 
 When posting a paste you can specify `--json` to receive post details. The output
-includes the base58 encoded key used to encrypt/decrypt the paste
-and can be used to construct the paste url.
+includes the base58 encoded key used to encrypt/decrypt the paste.
+Constructed paste url (including key) and delete url (including token) are also provided for convenience.
 
 Example output:
-```
-{"deletetoken":"ajae8c36aa945ff93a04bef4ff08fa505f96d49e1z28eb09a36l797c2eaeg952",
-"id":"e6a227cfbc0fec3e",
-"status":0,
-"url":"/?e6a227cfbc0fec3e",
-"bs58key":"31rvVHezWQH7sh7tgZGxfQJGKK4WLLCwFBL64Jr5nhLu"}
+```json
+{
+    "baseurl":"https://privatebin.net/",
+    "bs58key":"GN3qty1kAFbsGi9FbKKXigXwux1eofhiZQXNVFRMrNQd",
+    "deletetoken":"8536f6f8310ed4a9aae0e111b1763f5851cdbefe4c35e4b96bd690269635354a",
+    "deleteurl":"https://privatebin.net/?pasteid=31e2e7b19481fa7d&deletetoken=8536f6f8310ed4a9aae0e111b1763f5851cdbefe4c35e4b96bd690269635354a",
+    "id":"31e2e7b19481fa7d",
+    "pasteurl":"https://privatebin.net/?31e2e7b19481fa7d#GN3qty1kAFbsGi9FbKKXigXwux1eofhiZQXNVFRMrNQd",
+    "status":0,
+    "url":"/?31e2e7b19481fa7d"
+}
 ```
 ---
 #### Example usages to get a paste:
