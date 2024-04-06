@@ -4,6 +4,7 @@ use serde::Serialize;
 use serde_json::Value;
 use serde_with::skip_serializing_none;
 use std::io::ErrorKind;
+use url::Url;
 
 #[derive(Deserialize, Debug, Serialize)]
 pub enum CompressionType {
@@ -80,21 +81,21 @@ pub struct PostPasteResponse {
     pub id: String,
     pub status: u32,
     pub url: String,
-    pub baseurl: String,
+    pub baseurl: Url,
     pub bs58key: String,
 }
 
 impl PostPasteResponse {
     /// Return full paste url, i.e (base + ?id + #bs58key)
     pub fn to_paste_url(&self) -> url::Url {
-        let mut paste_url: url::Url = self.baseurl.parse().expect("Proper baseurl should be set");
+        let mut paste_url: url::Url = self.baseurl.clone();
         paste_url.set_query(Some(&self.id));
         paste_url.set_fragment(Some(&self.bs58key));
         paste_url
     }
     /// Return url that can be used to delete paste
     pub fn to_delete_url(&self) -> url::Url {
-        let mut delete_url: url::Url = self.baseurl.parse().expect("Proper baseurl should be set");
+        let mut delete_url: url::Url = self.baseurl.clone();
         delete_url
             .query_pairs_mut()
             .append_pair("pasteid", &self.id)
