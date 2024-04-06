@@ -1,6 +1,6 @@
 use base64::DecodeError;
 use data_url::DataUrlError;
-use miniz_oxide::inflate::TINFLStatus;
+use miniz_oxide::inflate::DecompressError;
 use serde_json::Error;
 use std::fmt;
 use std::fmt::Formatter;
@@ -27,7 +27,7 @@ pub enum PasteError {
     Base64Error(DecodeError),
     Base58Error(bs58::decode::Error),
     Aes(aes_gcm::Error),
-    Zlib(miniz_oxide::inflate::TINFLStatus),
+    Zlib(DecompressError),
     InvalidAttachment(data_url::DataUrlError),
     FileExists,
     NotAFile,
@@ -55,7 +55,7 @@ impl fmt::Display for PasteError {
             PasteError::ParseError(r) => r.fmt(f),
             PasteError::Base64Error(r) => r.fmt(f),
             PasteError::Aes(err) => err.fmt(f),
-            PasteError::Zlib(err) => write!(f, "Zlib error: {:?}", err),
+            PasteError::Zlib(err) => write!(f, "Zlib error: {:?}", err.status),
             PasteError::Base58Error(err) => err.fmt(f),
             PasteError::UnknownPasteStatus(err) => write!(f, "Unknown paste status: {}", err),
             PasteError::PasteNotFound => write!(f, "Invalid paste ID"),
@@ -109,8 +109,14 @@ impl From<aes_gcm::Error> for PasteError {
     }
 }
 
-impl From<miniz_oxide::inflate::TINFLStatus> for PasteError {
-    fn from(err: TINFLStatus) -> Self {
+// impl From<miniz_oxide::inflate::TINFLStatus> for PasteError {
+//     fn from(err: TINFLStatus) -> Self {
+//         PasteError::Zlib(err)
+//     }
+// }
+
+impl From<DecompressError> for PasteError {
+    fn from(err: DecompressError) -> Self {
         PasteError::Zlib(err)
     }
 }
