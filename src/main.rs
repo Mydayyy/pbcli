@@ -6,6 +6,7 @@ use pbcli::opts::Opts;
 use pbcli::privatebin::DecryptedPaste;
 use pbcli::util::check_filesize;
 use std::io::{Read, Write};
+use base64::prelude::*;
 
 fn get_stdin() -> std::io::Result<String> {
     if atty::is(atty::Stream::Stdin) {
@@ -99,7 +100,7 @@ fn handle_post(opts: &Opts) -> PbResult<()> {
 
         let mut data = Vec::new();
         handle.read_to_end(&mut data)?;
-        let b64_data = base64::encode(data);
+        let b64_data = BASE64_STANDARD.encode(data);
 
         paste.attachment = Some(create_dataurl(path.as_os_str(), b64_data));
         paste.attachment_name = Some(

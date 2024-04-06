@@ -7,6 +7,7 @@ use crate::DecryptedPaste;
 use rand_chacha::rand_core::{RngCore, SeedableRng};
 use reqwest::{Method, Url};
 use std::str::FromStr;
+use base64::prelude::*;
 
 #[derive()]
 pub struct API {
@@ -119,7 +120,7 @@ impl API {
 
         let mut post_body = serde_json::json!({
             "v": 2,
-            "adata": [[base64::encode(nonce),base64::encode(kdf_salt),100000,256,128,"aes","gcm","zlib"],opts.format,opts.discussion as u8,opts.burn as u8],
+            "adata": [[BASE64_STANDARD.encode(nonce),BASE64_STANDARD.encode(kdf_salt),100000,256,128,"aes","gcm","zlib"],opts.format,opts.discussion as u8,opts.burn as u8],
             "ct": "",
             "meta": {
                 "expire": opts.expire
@@ -136,7 +137,7 @@ impl API {
             &adata,
         )?;
 
-        let b64_encrpyed_content = base64::encode(encrypted_content);
+        let b64_encrpyed_content = BASE64_STANDARD.encode(encrypted_content);
 
         check_filesize(b64_encrpyed_content.len() as u64, opts.size_limit);
 
