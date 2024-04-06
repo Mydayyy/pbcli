@@ -4,6 +4,7 @@ use serde::Serialize;
 use serde_json::Value;
 use serde_with::skip_serializing_none;
 use std::io::ErrorKind;
+use url::Url;
 
 #[derive(Deserialize, Debug, Serialize)]
 pub enum CompressionType {
@@ -74,33 +75,34 @@ pub struct DecryptedPaste {
     pub attachment_name: Option<String>,
 }
 
-#[derive(Deserialize, Debug, Serialize)]
+#[derive(Deserialize, Debug, Serialize, Clone)]
 pub struct PostPasteResponse {
     pub deletetoken: String,
     pub id: String,
     pub status: u32,
     pub url: String,
+    pub baseurl: Url,
     pub bs58key: String,
 }
 
 impl PostPasteResponse {
     /// Return full paste url, i.e (base + ?id + #bs58key)
-    pub fn to_url(&self, base: &url::Url) -> url::Url {
-        let mut url = base.clone();
-        url.set_query(Some(&self.id));
-        url.set_fragment(Some(&self.bs58key));
-        url
+    pub fn to_paste_url(&self) -> url::Url {
+        let mut paste_url: url::Url = self.baseurl.clone();
+        paste_url.set_query(Some(&self.id));
+        paste_url.set_fragment(Some(&self.bs58key));
+        paste_url
     }
     /// Return url that can be used to delete paste
-    pub fn to_delete_url(&self, base: &url::Url) -> url::Url {
-        let mut delete_url = base.clone();
+    pub fn to_delete_url(&self) -> url::Url {
+        let mut delete_url: url::Url = self.baseurl.clone();
         delete_url
             .query_pairs_mut()
             .append_pair("pasteid", &self.id)
             .append_pair("deletetoken", &self.deletetoken);
         delete_url
     }
-    pub fn to_json(&self) -> String {
+    pub fn to_json_string(&self) -> String {
         serde_json::to_string(&self).unwrap()
     }
     pub fn is_success(&self) -> bool {
