@@ -172,7 +172,7 @@ pub struct PostCommentResponse {
     pub url: String,
 }
 
-#[derive(Deserialize, Debug, Serialize, Clone)]
+#[derive(Deserialize, Debug, Serialize, Clone, uniffi::Object)]
 pub struct PostPasteResponse {
     pub deletetoken: String,
     pub id: String,
