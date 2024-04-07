@@ -126,7 +126,7 @@ pub type DecryptedCommentsMap = HashMap<String, DecryptedComment>;
 /// comment.id -> [children comment.id]
 pub type CommentsAdjacencyMap = HashMap<String, Vec<String>>;
 
-#[derive(Deserialize, Debug, Serialize, Clone, uniffi::Record)]
+#[derive(Deserialize, Debug, Serialize, Clone, uniffi::Object)]
 pub struct PostPasteResponse {
     pub deletetoken: String,
     pub id: String,
