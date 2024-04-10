@@ -6,10 +6,11 @@ use pbcli::opts::Opts;
 use pbcli::privatebin::DecryptedPaste;
 use pbcli::util::check_filesize;
 use serde_json::Value;
+use std::io::IsTerminal;
 use std::io::{Read, Write};
 
 fn get_stdin() -> std::io::Result<String> {
-    if atty::is(atty::Stream::Stdin) {
+    if std::io::stdin().is_terminal() {
         return Ok("".into());
     }
     let mut buffer = String::new();
@@ -43,7 +44,7 @@ fn handle_get(opts: &Opts) -> PbResult<()> {
         match paste.decrypt(key) {
             Ok(c) => content = c,
             Err(err) => {
-                if !atty::is(atty::Stream::Stdin) {
+                if !std::io::stdin().is_terminal() {
                     return Err(err);
                 }
 
