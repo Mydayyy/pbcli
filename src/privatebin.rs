@@ -2,6 +2,7 @@ use crate::crypto::Decryptable;
 use crate::error::PbResult;
 use serde::Deserialize;
 use serde::Serialize;
+use serde::ser::{Serializer, SerializeTuple};
 use serde_json::Value;
 use serde_with::skip_serializing_none;
 use std::io::ErrorKind;
@@ -47,25 +48,25 @@ impl<'a> Decryptable<'a> for Paste {
     fn get_ct(&'a self) -> &'a str {
         &self.ct
     }
-    fn get_adata(&'a self) -> &'a Data {
-        &self.adata
+    fn get_cipher(&'a self) -> &'a Cipher {
+        &self.adata.cipher
     }
-    fn get_adata_str(&'a self) -> &'a str {
-        &self.adata_str
+    fn get_adata_str(&self) -> String{
+        self.adata_str.clone()
     }
 }
 
 #[derive(Deserialize, Debug, Serialize)]
 pub struct Comment {
-    pub status: i32,
+    pub status: Option<i32>,
     pub id: String,
     pub pasteid: String,
     pub parentid: String,
-    pub url: String,
+    pub url: Option<String>,
     pub v: i32,
     pub ct: String,
     pub meta: Meta,
-    pub adata: Data,
+    pub adata: Cipher,
 
     #[serde(skip)]
     pub adata_str: String,
@@ -75,11 +76,15 @@ impl<'a> Decryptable<'a> for Comment {
     fn get_ct(&'a self) -> &'a str {
         &self.ct
     }
-    fn get_adata(&'a self) -> &'a Data {
+    fn get_cipher(&'a self) -> &'a Cipher {
         &self.adata
     }
-    fn get_adata_str(&'a self) -> &'a str {
-        &self.adata_str
+    fn get_adata_str(&self) -> String {
+        if self.adata_str.is_empty() {
+            serde_json::to_string(&self.adata).unwrap()
+        } else {
+            self.adata_str.clone()
+        }
     }
 }
 
@@ -88,7 +93,7 @@ pub struct Meta {
     pub created: i32,
 }
 
-#[derive(Deserialize, Debug, Serialize)]
+#[derive(Deserialize, Debug)]
 pub struct Data {
     pub cipher: Cipher,
     pub format: PasteFormat,
@@ -96,7 +101,7 @@ pub struct Data {
     pub burn: i8,
 }
 
-#[derive(Deserialize, Debug, Serialize)]
+#[derive(Deserialize, Debug)]
 pub struct Cipher {
     pub cipher_iv: String,
     pub kdf_salt: String,
@@ -186,6 +191,38 @@ impl Comment {
     ) -> PbResult<DecryptedComment> {
         let key = bs58::decode(bs58_key).into_vec()?;
         crate::crypto::decrypt_with_password(self, &key, password)
+    }
+}
+
+impl Serialize for Data {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut s = serializer.serialize_tuple(4)?;
+        s.serialize_element(&self.cipher)?;
+        s.serialize_element(&self.format)?;
+        s.serialize_element(&self.discuss)?;
+        s.serialize_element(&self.burn)?;
+        s.end()
+    }
+}
+
+impl Serialize for Cipher {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut s = serializer.serialize_tuple(8)?;
+        s.serialize_element(&self.cipher_iv)?;
+        s.serialize_element(&self.kdf_salt)?;
+        s.serialize_element(&self.kdf_iterations)?;
+        s.serialize_element(&self.kdf_keysize)?;
+        s.serialize_element(&self.cipher_tag_size)?;
+        s.serialize_element(&self.cipher_algo)?;
+        s.serialize_element(&self.cipher_mode)?;
+        s.serialize_element(&self.compression_type)?;
+        s.end()
     }
 }
 
