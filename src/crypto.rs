@@ -1,23 +1,29 @@
 use crate::error::{PasteError, PbResult};
-use crate::privatebin::{DecryptedPaste, Paste};
+use crate::privatebin::{Data, DecryptedPaste};
 use aes_gcm::aead::{Aead, NewAead};
 use aes_gcm::{Key, Nonce};
+
+pub trait EncryptedT<'a> {
+    fn get_adata_str(&'a self) -> &'a str;
+    fn get_adata(&'a self) -> &'a Data;
+    fn get_ct(&'a self) -> &'a str;
+}
 
 fn derive_key(iterations: std::num::NonZeroU32, salt: &[u8], key: &[u8], out: &mut [u8]) {
     ring::pbkdf2::derive(ring::pbkdf2::PBKDF2_HMAC_SHA256, iterations, salt, key, out);
 }
 
-pub fn decrypt_with_password<DecryptedT: serde::de::DeserializeOwned>(
-    paste: &Paste,
+pub fn decrypt_with_password<'a, DecryptedT: serde::de::DeserializeOwned>(
+    pasteorcomment: &'a impl EncryptedT<'a>,
     key: &[u8],
     password: &str,
 ) -> PbResult<DecryptedT> {
-    let cipher_algo = &paste.adata.cipher.cipher_algo;
-    let cipher_mode = &paste.adata.cipher.cipher_mode;
-    let kdf_keysize = paste.adata.cipher.kdf_keysize;
+    let cipher_algo = &pasteorcomment.get_adata().cipher.cipher_algo;
+    let cipher_mode = &pasteorcomment.get_adata().cipher.cipher_mode;
+    let kdf_keysize = pasteorcomment.get_adata().cipher.kdf_keysize;
 
-    let salt = base64::decode(&paste.adata.cipher.kdf_salt)?;
-    let iterations = std::num::NonZeroU32::new(paste.adata.cipher.kdf_iterations).unwrap();
+    let salt = base64::decode(&pasteorcomment.get_adata().cipher.kdf_salt)?;
+    let iterations = std::num::NonZeroU32::new(pasteorcomment.get_adata().cipher.kdf_iterations).unwrap();
 
     let key = [key, password.as_bytes()].concat();
 
@@ -26,14 +32,14 @@ pub fn decrypt_with_password<DecryptedT: serde::de::DeserializeOwned>(
 
     match (&cipher_algo[..], &cipher_mode[..], kdf_keysize) {
         ("aes", "gcm", 256) => {
-            let data = decrypt_aes_256_gcm(paste, &derived_key)?;
+            let data = decrypt_aes_256_gcm(pasteorcomment, &derived_key)?;
             let value: serde_json::Value = serde_json::from_slice(&data)?;
             Ok(serde_json::from_value(value)?)
         },
         _ => Err(PasteError::CipherNotImplemented {
-            cipher_mode: paste.adata.cipher.cipher_mode.clone(),
-            cipher_algo: paste.adata.cipher.cipher_algo.clone(),
-            keysize: paste.adata.cipher.kdf_keysize,
+            cipher_mode: pasteorcomment.get_adata().cipher.cipher_mode.clone(),
+            cipher_algo: pasteorcomment.get_adata().cipher.cipher_algo.clone(),
+            keysize: pasteorcomment.get_adata().cipher.kdf_keysize,
         }),
     }
 }
@@ -75,15 +81,15 @@ fn convert_to_decrypted_paste(data: &[u8]) -> PbResult<DecryptedPaste> {
     Ok(serde_json::from_value(value)?)
 }
 
-fn decrypt_aes_256_gcm(paste: &Paste, derived_key: &[u8]) -> PbResult<Vec<u8>> {
+fn decrypt_aes_256_gcm<'a>(pasteorcomment: &'a impl EncryptedT<'a>, derived_key: &[u8]) -> PbResult<Vec<u8>> {
     type Cipher = aes_gcm::AesGcm<aes_gcm::aes::Aes256, typenum::U16>;
-    let ciphertext = base64::decode(&paste.ct)?;
-    let nonce = base64::decode(&paste.adata.cipher.cipher_iv)?;
+    let ciphertext = base64::decode(pasteorcomment.get_ct())?;
+    let nonce = base64::decode(&pasteorcomment.get_adata().cipher.cipher_iv)?;
 
     let cipher = Cipher::new(Key::from_slice(derived_key));
     let payload = aes_gcm::aead::Payload {
         msg: &ciphertext,
-        aad: paste.adata_str.as_bytes(),
+        aad: pasteorcomment.get_adata_str().as_bytes(),
     };
     let data = cipher.decrypt(Nonce::from_slice(&nonce), payload)?;
     let decompressed = miniz_oxide::inflate::decompress_to_vec(&data)?;
