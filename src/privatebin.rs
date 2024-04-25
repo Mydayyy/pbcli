@@ -1,4 +1,4 @@
-use crate::crypto::EncryptedT;
+use crate::crypto::Decryptable;
 use crate::error::PbResult;
 use serde::Deserialize;
 use serde::Serialize;
@@ -43,7 +43,7 @@ pub struct Paste {
     pub adata_str: String,
 }
 
-impl<'a> EncryptedT<'a> for Paste {
+impl<'a> Decryptable<'a> for Paste {
     fn get_ct(&'a self) -> &'a str {
         &self.ct
     }
@@ -71,7 +71,7 @@ pub struct Comment {
     pub adata_str: String,
 }
 
-impl<'a> EncryptedT<'a> for Comment {
+impl<'a> Decryptable<'a> for Comment {
     fn get_ct(&'a self) -> &'a str {
         &self.ct
     }

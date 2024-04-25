@@ -3,7 +3,7 @@ use crate::privatebin::Data;
 use aes_gcm::aead::{Aead, NewAead};
 use aes_gcm::{Key, Nonce};
 
-pub trait EncryptedT<'a> {
+pub trait Decryptable<'a> {
     fn get_adata_str(&'a self) -> &'a str;
     fn get_adata(&'a self) -> &'a Data;
     fn get_ct(&'a self) -> &'a str;
@@ -14,7 +14,7 @@ fn derive_key(iterations: std::num::NonZeroU32, salt: &[u8], key: &[u8], out: &m
 }
 
 pub fn decrypt_with_password<'a, DecryptedT: serde::de::DeserializeOwned>(
-    pasteorcomment: &'a impl EncryptedT<'a>,
+    pasteorcomment: &'a impl Decryptable<'a>,
     key: &[u8],
     password: &str,
 ) -> PbResult<DecryptedT> {
@@ -77,7 +77,7 @@ pub fn encrypt(
 }
 
 
-fn decrypt_aes_256_gcm<'a>(pasteorcomment: &'a impl EncryptedT<'a>, derived_key: &[u8]) -> PbResult<Vec<u8>> {
+fn decrypt_aes_256_gcm<'a>(pasteorcomment: &'a impl Decryptable<'a>, derived_key: &[u8]) -> PbResult<Vec<u8>> {
     type Cipher = aes_gcm::AesGcm<aes_gcm::aes::Aes256, typenum::U16>;
     let ciphertext = base64::decode(pasteorcomment.get_ct())?;
     let nonce = base64::decode(&pasteorcomment.get_adata().cipher.cipher_iv)?;
