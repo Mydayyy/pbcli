@@ -19,7 +19,7 @@ fn derive_key(iterations: std::num::NonZeroU32, salt: &[u8], key: &[u8], out: &m
     ring::pbkdf2::derive(ring::pbkdf2::PBKDF2_HMAC_SHA256, iterations, salt, key, out);
 }
 
-/// Decrypt decryptable, then attempt deserialize to requested type (DecryptedT) 
+/// Decrypt decryptable, then attempt deserialize to requested type (DecryptedT)
 pub fn decrypt_with_password<'a, DecryptedT: serde::de::DeserializeOwned>(
     pasteorcomment: &'a impl Decryptable<'a>,
     key: &[u8],
@@ -93,7 +93,6 @@ fn decrypt_aes_256_gcm<'a>(
 
     let cipher = Cipher::new(Key::from_slice(derived_key));
     let adata_str = pasteorcomment.get_adata_str();
-    print!("{}", adata_str);
     let payload = aes_gcm::aead::Payload {
         msg: &ciphertext,
         aad: adata_str.as_bytes(),
