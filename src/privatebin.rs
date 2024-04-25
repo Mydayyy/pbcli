@@ -36,6 +36,23 @@ pub struct Paste {
     pub ct: String,
     pub meta: Meta,
     pub adata: Data,
+    pub comments: Option<Vec<Comment>>,
+
+    #[serde(skip)]
+    pub adata_str: String,
+}
+
+#[derive(Deserialize, Debug, Serialize)]
+pub struct Comment {
+    pub status: i32,
+    pub id: String,
+    pub pasteid: String,
+    pub parentid: String,
+    pub url: String,
+    pub v: i32,
+    pub ct: String,
+    pub meta: Meta,
+    pub adata: Data,
 
     #[serde(skip)]
     pub adata_str: String,
@@ -73,6 +90,13 @@ pub struct DecryptedPaste {
     pub paste: String,
     pub attachment: Option<String>,
     pub attachment_name: Option<String>,
+}
+
+#[skip_serializing_none]
+#[derive(Deserialize, Debug, Serialize)]
+pub struct DecryptedComment {
+    pub comment: String,
+    pub nickname: Option<String>,
 }
 
 #[derive(Deserialize, Debug, Serialize, Clone)]
@@ -120,6 +144,21 @@ impl Paste {
         bs58_key: &str,
         password: &str,
     ) -> PbResult<DecryptedPaste> {
+        let key = bs58::decode(bs58_key).into_vec()?;
+        crate::crypto::decrypt_with_password(self, &key, password)
+    }
+}
+
+impl Comment {
+    pub fn decrypt(&self, bs58_key: &str) -> PbResult<DecryptedComment> {
+        self.decrypt_with_password(bs58_key, "")
+    }
+
+    pub fn decrypt_with_password(
+        &self,
+        bs58_key: &str,
+        password: &str,
+    ) -> PbResult<DecryptedComment> {
         let key = bs58::decode(bs58_key).into_vec()?;
         crate::crypto::decrypt_with_password(self, &key, password)
     }
