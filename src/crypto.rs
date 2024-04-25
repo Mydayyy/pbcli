@@ -3,16 +3,23 @@ use crate::privatebin::Cipher;
 use aes_gcm::aead::{Aead, NewAead};
 use aes_gcm::{Key, Nonce};
 
+/// Trait implemented by any decrypt-able type (paste or comment)
 pub trait Decryptable<'a> {
-    fn get_adata_str(&self) -> String;
-    fn get_cipher(&'a self) -> &'a Cipher;
+    /// Get ciphertext.
+    /// We prefer to borrow this and not copy, because ct may be large.
     fn get_ct(&'a self) -> &'a str;
+    /// Additional authenticated (but not encrypted) data.
+    /// Sensitive to formatting changes.
+    fn get_adata_str(&self) -> String;
+    /// Cipher parameters
+    fn get_cipher(&'a self) -> &'a Cipher;
 }
 
 fn derive_key(iterations: std::num::NonZeroU32, salt: &[u8], key: &[u8], out: &mut [u8]) {
     ring::pbkdf2::derive(ring::pbkdf2::PBKDF2_HMAC_SHA256, iterations, salt, key, out);
 }
 
+/// Decrypt decryptable, then attempt deserialize to requested type (DecryptedT) 
 pub fn decrypt_with_password<'a, DecryptedT: serde::de::DeserializeOwned>(
     pasteorcomment: &'a impl Decryptable<'a>,
     key: &[u8],
