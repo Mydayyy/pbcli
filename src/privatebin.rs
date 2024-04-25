@@ -1,8 +1,8 @@
 use crate::crypto::Decryptable;
 use crate::error::PbResult;
+use serde::ser::{SerializeTuple, Serializer};
 use serde::Deserialize;
 use serde::Serialize;
-use serde::ser::{Serializer, SerializeTuple};
 use serde_json::Value;
 use serde_with::skip_serializing_none;
 use std::io::ErrorKind;
@@ -51,7 +51,7 @@ impl<'a> Decryptable<'a> for Paste {
     fn get_cipher(&'a self) -> &'a Cipher {
         &self.adata.cipher
     }
-    fn get_adata_str(&self) -> String{
+    fn get_adata_str(&self) -> String {
         self.adata_str.clone()
     }
 }

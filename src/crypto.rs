@@ -35,7 +35,7 @@ pub fn decrypt_with_password<'a, DecryptedT: serde::de::DeserializeOwned>(
             let data = decrypt_aes_256_gcm(pasteorcomment, &derived_key)?;
             let value: serde_json::Value = serde_json::from_slice(&data)?;
             Ok(serde_json::from_value(value)?)
-        },
+        }
         _ => Err(PasteError::CipherNotImplemented {
             cipher_mode: pasteorcomment.get_cipher().cipher_mode.clone(),
             cipher_algo: pasteorcomment.get_cipher().cipher_algo.clone(),
@@ -76,8 +76,10 @@ pub fn encrypt(
     Ok(encrypted_data)
 }
 
-
-fn decrypt_aes_256_gcm<'a>(pasteorcomment: &'a impl Decryptable<'a>, derived_key: &[u8]) -> PbResult<Vec<u8>> {
+fn decrypt_aes_256_gcm<'a>(
+    pasteorcomment: &'a impl Decryptable<'a>,
+    derived_key: &[u8],
+) -> PbResult<Vec<u8>> {
     type Cipher = aes_gcm::AesGcm<aes_gcm::aes::Aes256, typenum::U16>;
     let ciphertext = base64::decode(pasteorcomment.get_ct())?;
     let nonce = base64::decode(&pasteorcomment.get_cipher().cipher_iv)?;
