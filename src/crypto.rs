@@ -1,5 +1,5 @@
 use crate::error::{PasteError, PbResult};
-use crate::privatebin::{Data, DecryptedPaste};
+use crate::privatebin::Data;
 use aes_gcm::aead::{Aead, NewAead};
 use aes_gcm::{Key, Nonce};
 
@@ -76,10 +76,6 @@ pub fn encrypt(
     Ok(encrypted_data)
 }
 
-fn convert_to_decrypted_paste(data: &[u8]) -> PbResult<DecryptedPaste> {
-    let value: serde_json::Value = serde_json::from_slice(data)?;
-    Ok(serde_json::from_value(value)?)
-}
 
 fn decrypt_aes_256_gcm<'a>(pasteorcomment: &'a impl EncryptedT<'a>, derived_key: &[u8]) -> PbResult<Vec<u8>> {
     type Cipher = aes_gcm::AesGcm<aes_gcm::aes::Aes256, typenum::U16>;
