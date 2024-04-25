@@ -7,11 +7,11 @@ fn derive_key(iterations: std::num::NonZeroU32, salt: &[u8], key: &[u8], out: &m
     ring::pbkdf2::derive(ring::pbkdf2::PBKDF2_HMAC_SHA256, iterations, salt, key, out);
 }
 
-pub fn decrypt_with_password(
+pub fn decrypt_with_password<DecryptedT: serde::de::DeserializeOwned>(
     paste: &Paste,
     key: &[u8],
     password: &str,
-) -> PbResult<DecryptedPaste> {
+) -> PbResult<DecryptedT> {
     let cipher_algo = &paste.adata.cipher.cipher_algo;
     let cipher_mode = &paste.adata.cipher.cipher_mode;
     let kdf_keysize = paste.adata.cipher.kdf_keysize;
@@ -25,7 +25,11 @@ pub fn decrypt_with_password(
     derive_key(iterations, &salt, &key, &mut derived_key);
 
     match (&cipher_algo[..], &cipher_mode[..], kdf_keysize) {
-        ("aes", "gcm", 256) => decrypt_aes_256_gcm(paste, &derived_key),
+        ("aes", "gcm", 256) => {
+            let data = decrypt_aes_256_gcm(paste, &derived_key)?;
+            let value: serde_json::Value = serde_json::from_slice(&data)?;
+            Ok(serde_json::from_value(value)?)
+        },
         _ => Err(PasteError::CipherNotImplemented {
             cipher_mode: paste.adata.cipher.cipher_mode.clone(),
             cipher_algo: paste.adata.cipher.cipher_algo.clone(),
@@ -71,7 +75,7 @@ fn convert_to_decrypted_paste(data: &[u8]) -> PbResult<DecryptedPaste> {
     Ok(serde_json::from_value(value)?)
 }
 
-fn decrypt_aes_256_gcm(paste: &Paste, derived_key: &[u8]) -> PbResult<DecryptedPaste> {
+fn decrypt_aes_256_gcm(paste: &Paste, derived_key: &[u8]) -> PbResult<Vec<u8>> {
     type Cipher = aes_gcm::AesGcm<aes_gcm::aes::Aes256, typenum::U16>;
     let ciphertext = base64::decode(&paste.ct)?;
     let nonce = base64::decode(&paste.adata.cipher.cipher_iv)?;
@@ -83,6 +87,5 @@ fn decrypt_aes_256_gcm(paste: &Paste, derived_key: &[u8]) -> PbResult<DecryptedP
     };
     let data = cipher.decrypt(Nonce::from_slice(&nonce), payload)?;
     let decompressed = miniz_oxide::inflate::decompress_to_vec(&data)?;
-
-    convert_to_decrypted_paste(&decompressed)
+    Ok(decompressed)
 }
