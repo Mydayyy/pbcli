@@ -1,3 +1,4 @@
+use crate::crypto::EncryptedT;
 use crate::error::PbResult;
 use serde::Deserialize;
 use serde::Serialize;
@@ -42,6 +43,18 @@ pub struct Paste {
     pub adata_str: String,
 }
 
+impl<'a> EncryptedT<'a> for Paste {
+    fn get_ct(&'a self) -> &'a str {
+        &self.ct
+    }
+    fn get_adata(&'a self) -> &'a Data {
+        &self.adata
+    }
+    fn get_adata_str(&'a self) -> &'a str {
+        &self.adata_str
+    }
+}
+
 #[derive(Deserialize, Debug, Serialize)]
 pub struct Comment {
     pub status: i32,
@@ -56,6 +69,18 @@ pub struct Comment {
 
     #[serde(skip)]
     pub adata_str: String,
+}
+
+impl<'a> EncryptedT<'a> for Comment {
+    fn get_ct(&'a self) -> &'a str {
+        &self.ct
+    }
+    fn get_adata(&'a self) -> &'a Data {
+        &self.adata
+    }
+    fn get_adata_str(&'a self) -> &'a str {
+        &self.adata_str
+    }
 }
 
 #[derive(Deserialize, Debug, Serialize)]
