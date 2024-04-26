@@ -95,7 +95,7 @@ impl API {
         let status: u32 = value.get("status").unwrap().as_u64().unwrap() as u32;
 
         match status {
-            0 => Ok(value.try_into()?),
+            0 => Ok(serde_json::from_value(value)?),
             1 => Err(PasteError::PasteNotFound),
             s => Err(PasteError::UnknownPasteStatus(s)),
         }

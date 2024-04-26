@@ -3,9 +3,7 @@ use crate::error::PbResult;
 use serde::ser::{SerializeTuple, Serializer};
 use serde::Deserialize;
 use serde::Serialize;
-use serde_json::Value;
 use serde_with::skip_serializing_none;
-use std::io::ErrorKind;
 use url::Url;
 
 #[derive(Deserialize, Debug, Serialize)]
@@ -39,9 +37,6 @@ pub struct Paste {
     pub meta: Meta,
     pub adata: Data,
     pub comments: Option<Vec<Comment>>,
-
-    #[serde(skip)]
-    pub adata_str: String,
 }
 
 impl Decryptable for Paste {
@@ -52,7 +47,7 @@ impl Decryptable for Paste {
         &self.adata.cipher
     }
     fn get_adata_str(&self) -> String {
-        self.adata_str.clone()
+        serde_json::to_string(&self.adata).unwrap()
     }
 }
 
@@ -67,9 +62,6 @@ pub struct Comment {
     pub ct: String,
     pub meta: Meta,
     pub adata: Cipher,
-
-    #[serde(skip)]
-    pub adata_str: String,
 }
 
 impl Decryptable for Comment {
@@ -80,11 +72,7 @@ impl Decryptable for Comment {
         &self.adata
     }
     fn get_adata_str(&self) -> String {
-        if self.adata_str.is_empty() {
-            serde_json::to_string(&self.adata).unwrap()
-        } else {
-            self.adata_str.clone()
-        }
+        serde_json::to_string(&self.adata).unwrap()
     }
 }
 
@@ -227,23 +215,5 @@ impl Serialize for Cipher {
         s.serialize_element(&self.cipher_mode)?;
         s.serialize_element(&self.compression_type)?;
         s.end()
-    }
-}
-
-impl TryFrom<serde_json::Value> for Paste {
-    type Error = crate::error::PbError;
-
-    fn try_from(value: Value) -> PbResult<Self> {
-        let adata = value.get("adata").ok_or(std::io::Error::new(
-            ErrorKind::InvalidData,
-            "Cannot get adata in try_from",
-        ))?;
-        let adata_str = serde_json::to_string(adata)?;
-
-        let mut paste = serde_json::from_value::<Paste>(value)?;
-
-        paste.adata_str = adata_str;
-
-        Ok(paste)
     }
 }
