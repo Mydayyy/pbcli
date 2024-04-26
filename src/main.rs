@@ -28,10 +28,13 @@ fn create_dataurl(path: &std::ffi::OsStr, data: String) -> String {
 fn handle_get(opts: &Opts) -> PbResult<()> {
     let url = opts.get_url();
     let paste_id = opts.get_url().query().unwrap();
-    let key = opts
+    let fragment = opts
         .get_url()
         .fragment()
         .ok_or(PasteError::MissingDecryptionKey)?;
+    // '-' character may be found at start of fragment. This should be stripped.
+    // It is used to activate "warn before read" feature for burn on read pastes.
+    let key = fragment.strip_prefix('-').unwrap_or(fragment);
 
     let api = API::new(url.clone(), opts.clone());
     let paste = api.get_paste(paste_id)?;
