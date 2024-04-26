@@ -4,15 +4,15 @@ use aes_gcm::aead::{Aead, NewAead};
 use aes_gcm::{Key, Nonce};
 
 /// Trait implemented by any decrypt-able type (paste or comment)
-pub trait Decryptable<'a> {
+pub trait Decryptable {
     /// Get ciphertext.
     /// We prefer to borrow this and not copy, because ct may be large.
-    fn get_ct(&'a self) -> &'a str;
+    fn get_ct(&self) -> &str;
     /// Additional authenticated (but not encrypted) data.
     /// Sensitive to formatting changes.
     fn get_adata_str(&self) -> String;
     /// Cipher parameters
-    fn get_cipher(&'a self) -> &'a Cipher;
+    fn get_cipher(&self) -> &Cipher;
 }
 
 fn derive_key(iterations: std::num::NonZeroU32, salt: &[u8], key: &[u8], out: &mut [u8]) {
@@ -20,8 +20,8 @@ fn derive_key(iterations: std::num::NonZeroU32, salt: &[u8], key: &[u8], out: &m
 }
 
 /// Decrypt decryptable, then attempt deserialize to requested type (DecryptedT)
-pub fn decrypt_with_password<'a, DecryptedT: serde::de::DeserializeOwned>(
-    decryptable: &'a impl Decryptable<'a>,
+pub fn decrypt_with_password<DecryptedT: serde::de::DeserializeOwned>(
+    decryptable: &impl Decryptable,
     key: &[u8],
     password: &str,
 ) -> PbResult<DecryptedT> {
@@ -83,10 +83,7 @@ pub fn encrypt(
     Ok(encrypted_data)
 }
 
-fn decrypt_aes_256_gcm<'a>(
-    decryptable: &'a impl Decryptable<'a>,
-    derived_key: &[u8],
-) -> PbResult<Vec<u8>> {
+fn decrypt_aes_256_gcm(decryptable: &impl Decryptable, derived_key: &[u8]) -> PbResult<Vec<u8>> {
     type Cipher = aes_gcm::AesGcm<aes_gcm::aes::Aes256, typenum::U16>;
     let ciphertext = base64::decode(decryptable.get_ct())?;
     let nonce = base64::decode(&decryptable.get_cipher().cipher_iv)?;

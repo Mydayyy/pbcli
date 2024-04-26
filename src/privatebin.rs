@@ -44,11 +44,11 @@ pub struct Paste {
     pub adata_str: String,
 }
 
-impl<'a> Decryptable<'a> for Paste {
-    fn get_ct(&'a self) -> &'a str {
+impl Decryptable for Paste {
+    fn get_ct(&self) -> &str {
         &self.ct
     }
-    fn get_cipher(&'a self) -> &'a Cipher {
+    fn get_cipher(&self) -> &Cipher {
         &self.adata.cipher
     }
     fn get_adata_str(&self) -> String {
@@ -72,11 +72,11 @@ pub struct Comment {
     pub adata_str: String,
 }
 
-impl<'a> Decryptable<'a> for Comment {
-    fn get_ct(&'a self) -> &'a str {
+impl Decryptable for Comment {
+    fn get_ct(&self) -> &str {
         &self.ct
     }
-    fn get_cipher(&'a self) -> &'a Cipher {
+    fn get_cipher(&self) -> &Cipher {
         &self.adata
     }
     fn get_adata_str(&self) -> String {
