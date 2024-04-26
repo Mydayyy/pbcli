@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::crypto::Decryptable;
 use crate::error::PbResult;
 use serde::ser::{SerializeTuple, Serializer};
@@ -164,6 +166,27 @@ impl Paste {
     ) -> PbResult<DecryptedPaste> {
         let key = bs58::decode(bs58_key).into_vec()?;
         crate::crypto::decrypt_with_password(self, &key, password)
+    }
+
+    /// returns a mapping: comment.id -> decrypted_comment
+    pub fn decrypt_comments(&self, bs58_key: &str) -> PbResult<HashMap<String, DecryptedComment>> {
+        self.decrypt_comments_with_password(bs58_key, "")
+    }
+
+    /// returns a mapping: comment.id -> decrypted_comment
+    pub fn decrypt_comments_with_password(
+        &self,
+        bs58_key: &str,
+        password: &str,
+    ) -> PbResult<HashMap<String, DecryptedComment>> {
+        let mut decrypted_comments = HashMap::new();
+        if let Some(comments) = &self.comments {
+            for comment in comments {
+                let id = comment.id.clone();
+                decrypted_comments.insert(id, comment.decrypt_with_password(bs58_key, password)?);
+            }
+        };
+        Ok(decrypted_comments)
     }
 }
 
