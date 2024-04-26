@@ -194,6 +194,8 @@ impl Comment {
     }
 }
 
+/// Data struct needs to be serialized as an ordered array (not object),
+/// so we implement custom serialization.
 impl Serialize for Data {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -208,6 +210,8 @@ impl Serialize for Data {
     }
 }
 
+/// Cipher struct needs to be serialized as an ordered array (not object),
+/// so we implement custom serialization.
 impl Serialize for Cipher {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
