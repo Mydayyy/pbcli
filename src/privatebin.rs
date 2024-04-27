@@ -195,17 +195,14 @@ impl Paste {
         };
         Ok(decrypted_comments)
     }
+
     /// Returns a mapping: comment.id -> [children comment.id]
     pub fn comments_adjacency_map(&self) -> PbResult<CommentsAdjacencyMap> {
-        let mut comment_adjacency: HashMap<String, Vec<String>> = HashMap::new();
+        let mut comment_adjacency: CommentsAdjacencyMap = HashMap::new();
         if let Some(comments) = &self.comments {
             for c in comments {
                 let id = c.id.clone();
-                let parentid = if c.parentid == c.pasteid {
-                    "".to_owned()
-                } else {
-                    c.parentid.clone()
-                };
+                let parentid = c.parentid.clone();
                 comment_adjacency.entry(parentid).or_default().push(id);
             }
         }
@@ -239,7 +236,7 @@ impl Paste {
                 }
             })
         }
-        let top_level = format_comments_below_id("", decrypted_comments, comment_adjacency);
+        let top_level = format_comments_below_id(&self.id, decrypted_comments, comment_adjacency);
         serde_json::to_string_pretty(&top_level).map_err(|e| e.into())
     }
 }
