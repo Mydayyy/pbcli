@@ -1,4 +1,4 @@
-use crate::crypto::encrypt;
+use crate::crypto::{encrypt, Decryptable};
 use crate::error::{PasteError, PbError, PbResult};
 use crate::opts::Opts;
 use crate::privatebin::{Comment, DecryptedComment, Paste, PostCommentResponse, PostPasteResponse};
@@ -120,8 +120,7 @@ impl API {
         paste.adata.burn = opts.burn as u8;
         paste.meta.expire = Some(opts.expire.clone());
 
-        let adata = &paste.adata;
-        let cipher = &adata.cipher;
+        let cipher = &paste.adata.cipher;
 
         let encrypted_content = encrypt(
             &serde_json::to_string(content)?,
@@ -130,7 +129,7 @@ impl API {
             &cipher.vec_kdf_salt()?,
             &cipher.vec_cipher_iv()?,
             cipher.kdf_iterations,
-            &serde_json::to_string(&adata)?,
+            &paste.get_adata_str(),
         )?;
 
         let b64_encrpyed_content = base64::encode(encrypted_content);
@@ -170,7 +169,6 @@ impl API {
             ..Default::default()
         };
         let cipher = &comment.adata;
-        let adata = &comment.adata;
         let paste_passphrase = bs58::decode(bs58key).into_vec()?;
 
         let encrypted_content = encrypt(
@@ -180,7 +178,7 @@ impl API {
             &cipher.vec_kdf_salt()?,
             &cipher.vec_cipher_iv()?,
             cipher.kdf_iterations,
-            &serde_json::to_string(&adata)?,
+            &comment.get_adata_str(),
         )?;
 
         let b64_encrpyed_content = base64::encode(encrypted_content);
