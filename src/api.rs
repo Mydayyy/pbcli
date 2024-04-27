@@ -1,7 +1,7 @@
 use crate::crypto::encrypt;
 use crate::error::{PasteError, PbError, PbResult};
 use crate::opts::Opts;
-use crate::privatebin::{Paste, PostPasteResponse};
+use crate::privatebin::{Comment, DecryptedComment, Paste, PostCommentResponse, PostPasteResponse};
 use crate::util::check_filesize;
 use crate::DecryptedPaste;
 use rand_chacha::rand_core::{RngCore, SeedableRng};
@@ -111,7 +111,10 @@ impl API {
         let mut paste_passphrase = [0u8; 32];
         rng.fill_bytes(&mut paste_passphrase);
 
-        let mut paste = Paste{v: 2, ..Default::default()};
+        let mut paste = Paste {
+            v: 2,
+            ..Default::default()
+        };
         paste.adata.format = opts.format;
         paste.adata.discuss = opts.discussion as u8;
         paste.adata.burn = opts.burn as u8;
@@ -146,6 +149,53 @@ impl API {
 
         match status {
             0 => Ok(serde_json::from_value::<PostPasteResponse>(rsv)?),
+            1 => Err(PasteError::InvalidData),
+            s => Err(PasteError::UnknownPasteStatus(s)),
+        }
+    }
+
+    pub fn post_comment(
+        &self,
+        content: &DecryptedComment,
+        pasteid: &str,
+        parentid: &str,
+        bs58key: &str,
+        password: &str,
+        opts: &Opts,
+    ) -> PbResult<PostCommentResponse> {
+        let mut comment = Comment {
+            v: 2,
+            pasteid: pasteid.into(),
+            parentid: parentid.into(),
+            ..Default::default()
+        };
+        let cipher = &comment.adata;
+        let adata = &comment.adata;
+
+        let encrypted_content = encrypt(
+            &serde_json::to_string(content)?,
+            &base64::decode(bs58key)?,
+            password,
+            &base64::decode(&cipher.kdf_salt)?,
+            &base64::decode(&cipher.cipher_iv)?,
+            cipher.kdf_iterations,
+            &serde_json::to_string(&adata)?,
+        )?;
+
+        let b64_encrpyed_content = base64::encode(encrypted_content);
+        check_filesize(b64_encrpyed_content.len() as u64, opts.size_limit);
+        comment.ct = b64_encrpyed_content;
+
+        let url = self.base.clone();
+        let response = self
+            .preconfigured_privatebin_request_builder("POST", url)?
+            .body::<String>(serde_json::to_string(&comment).unwrap())
+            .send()?;
+        let rsv: serde_json::Value = response.json()?;
+        let status: u32 = rsv.get("status").unwrap().as_u64().unwrap() as u32;
+
+        match status {
+            0 => Ok(serde_json::from_value::<PostCommentResponse>(rsv)?),
             1 => Err(PasteError::InvalidData),
             s => Err(PasteError::UnknownPasteStatus(s)),
         }
