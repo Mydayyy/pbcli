@@ -32,9 +32,9 @@ pub enum PasteFormat {
 
 #[derive(Deserialize, Debug, Serialize)]
 pub struct Paste {
-    pub status: i32,
+    pub status: Option<i32>,
     pub id: String,
-    pub url: String,
+    pub url: Option<String>,
     pub v: i32,
     pub ct: String,
     pub meta: Meta,
@@ -56,11 +56,9 @@ impl Decryptable for Paste {
 
 #[derive(Deserialize, Debug, Serialize)]
 pub struct Comment {
-    pub status: Option<i32>,
     pub id: String,
     pub pasteid: String,
     pub parentid: String,
-    pub url: Option<String>,
     pub v: i32,
     pub ct: String,
     pub meta: Meta,
