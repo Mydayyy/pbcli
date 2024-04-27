@@ -3,7 +3,7 @@ use data_url::DataUrl;
 use pbcli::api::API;
 use pbcli::error::{PasteError, PbResult};
 use pbcli::opts::Opts;
-use pbcli::privatebin::DecryptedPaste;
+use pbcli::privatebin::{DecryptedCommentsMap, DecryptedPaste};
 use pbcli::util::check_filesize;
 use serde_json::Value;
 use std::io::IsTerminal;
@@ -40,12 +40,17 @@ fn handle_get(opts: &Opts) -> PbResult<()> {
     let paste = api.get_paste(paste_id)?;
 
     let content: DecryptedPaste;
+    let comments: DecryptedCommentsMap;
 
     if let Some(pass) = &opts.password {
         content = paste.decrypt_with_password(key, pass)?;
+        comments = paste.decrypt_comments_with_password(key, pass)?;
     } else {
         match paste.decrypt(key) {
-            Ok(c) => content = c,
+            Ok(c) => {
+                content = c;
+                comments = paste.decrypt_comments(key)?;
+            }
             Err(err) => {
                 if !std::io::stdin().is_terminal() {
                     return Err(err);
@@ -55,6 +60,7 @@ fn handle_get(opts: &Opts) -> PbResult<()> {
                     .with_prompt("Enter password")
                     .interact()?;
                 content = paste.decrypt_with_password(key, &password)?;
+                comments = paste.decrypt_comments_with_password(key, &password)?;
             }
         }
     }
@@ -75,7 +81,15 @@ fn handle_get(opts: &Opts) -> PbResult<()> {
         handle.write_all(&body)?;
     }
 
-    std::io::stdout().write_all(content.paste.as_bytes())?;
+    if !opts.json {
+        std::io::stdout().write_all(content.paste.as_bytes())?;
+    } else {
+        let mut output: Value = serde_json::to_value(content)?;
+        let comments_trees =
+            paste.comments_formatted_json_trees(&comments, &paste.comments_adjacency_map()?)?;
+        output["comments"] = serde_json::from_str(&comments_trees)?;
+        std::io::stdout().write_all(serde_json::to_string_pretty(&output)?.as_bytes())?;
+    }
 
     Ok(())
 }
@@ -121,7 +135,7 @@ fn handle_post(opts: &Opts) -> PbResult<()> {
         let mut output: Value = serde_json::to_value(res.clone())?;
         output["pasteurl"] = Value::String(res.to_paste_url().to_string());
         output["deleteurl"] = Value::String(res.to_delete_url().to_string());
-        std::io::stdout().write_all(output.to_string().as_bytes())?;
+        std::io::stdout().write_all(serde_json::to_string_pretty(&output)?.as_bytes())?;
     } else {
         std::io::stdout().write_all(res.to_paste_url().as_str().as_bytes())?;
         writeln!(std::io::stdout())?;
