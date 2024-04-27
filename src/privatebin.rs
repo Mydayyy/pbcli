@@ -229,15 +229,14 @@ impl Paste {
                 })
                 .collect();
             json!({
-                id: {
-                    "comment": decrypted_comments.get(id).unwrap_or(&DecryptedComment::default()).comment,
-                    "nickname": decrypted_comments.get(id).unwrap_or(&DecryptedComment::default()).nickname,
-                    "replies": formatted_children
-                }
+                "id": id,
+                "comment": decrypted_comments.get(id).unwrap_or(&DecryptedComment::default()).comment,
+                "nickname": decrypted_comments.get(id).unwrap_or(&DecryptedComment::default()).nickname,
+                "replies": formatted_children
             })
         }
         let top_level = format_comments_below_id(&self.id, decrypted_comments, comment_adjacency);
-        serde_json::to_string_pretty(&top_level[&self.id]["replies"]).map_err(|e| e.into())
+        serde_json::to_string_pretty(&top_level["replies"]).map_err(|e| e.into())
     }
 }
 
