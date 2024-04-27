@@ -85,9 +85,11 @@ fn handle_get(opts: &Opts) -> PbResult<()> {
         std::io::stdout().write_all(content.paste.as_bytes())?;
     } else {
         let mut output: Value = serde_json::to_value(content)?;
-        let comments_trees =
-            paste.comments_formatted_json_trees(&comments, &paste.comments_adjacency_map()?)?;
-        output["comments"] = serde_json::from_str(&comments_trees)?;
+        if !comments.is_empty() {
+            let comments_trees =
+                paste.comments_formatted_json_trees(&comments, &paste.comments_adjacency_map()?)?;
+            output["comments"] = serde_json::from_str(&comments_trees)?;
+        }
         std::io::stdout().write_all(serde_json::to_string_pretty(&output)?.as_bytes())?;
     }
 
