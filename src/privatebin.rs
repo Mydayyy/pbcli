@@ -114,7 +114,7 @@ pub struct DecryptedPaste {
 }
 
 #[skip_serializing_none]
-#[derive(Default, Deserialize, Debug, Serialize)]
+#[derive(Default, Deserialize, Debug, Serialize, uniffi::Record)]
 pub struct DecryptedComment {
     pub comment: String,
     pub nickname: Option<String>,
