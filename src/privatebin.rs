@@ -121,10 +121,10 @@ pub struct DecryptedComment {
 }
 
 /// comment.id -> decrypted_comment
-type DecryptedCommentsMap = HashMap<String, DecryptedComment>;
+pub type DecryptedCommentsMap = HashMap<String, DecryptedComment>;
 
 /// comment.id -> [children comment.id]
-type CommentsAdjacencyMap = HashMap<String, Vec<String>>;
+pub type CommentsAdjacencyMap = HashMap<String, Vec<String>>;
 
 #[derive(Deserialize, Debug, Serialize, Clone)]
 pub struct PostPasteResponse {
@@ -209,8 +209,8 @@ impl Paste {
         Ok(comment_adjacency)
     }
 
-    /// Returns a formatted json tree of decrypted comments
-    pub fn comments_formatted_tree(
+    /// Returns formatted json trees (forest) of decrypted comments
+    pub fn comments_formatted_json_trees(
         &self,
         decrypted_comments: &DecryptedCommentsMap,
         comment_adjacency: &CommentsAdjacencyMap,
@@ -237,7 +237,7 @@ impl Paste {
             })
         }
         let top_level = format_comments_below_id(&self.id, decrypted_comments, comment_adjacency);
-        serde_json::to_string_pretty(&top_level).map_err(|e| e.into())
+        serde_json::to_string_pretty(&top_level[&self.id]["replies"]).map_err(|e| e.into())
     }
 }
 
