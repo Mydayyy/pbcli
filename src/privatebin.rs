@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use crate::crypto::Decryptable;
 use crate::error::PbResult;
+use rand_core::{RngCore, SeedableRng};
 use serde::ser::{SerializeTuple, Serializer};
 use serde::Deserialize;
 use serde::Serialize;
@@ -9,17 +10,19 @@ use serde_json::json;
 use serde_with::skip_serializing_none;
 use url::Url;
 
-#[derive(Deserialize, Debug, Serialize)]
+#[derive(Default, Deserialize, Debug, Serialize)]
 pub enum CompressionType {
     #[serde(rename = "none")]
     None,
 
+    #[default]
     #[serde(rename = "zlib")]
     Zlib,
 }
 
-#[derive(clap::ArgEnum, Deserialize, Debug, Serialize, Clone)]
+#[derive(Default, clap::ArgEnum, Deserialize, Debug, Serialize, Clone, Copy)]
 pub enum PasteFormat {
+    #[default]
     #[serde(rename = "plaintext")]
     Plaintext,
 
@@ -30,7 +33,8 @@ pub enum PasteFormat {
     Markdown,
 }
 
-#[derive(Deserialize, Debug, Serialize)]
+#[skip_serializing_none]
+#[derive(Default, Deserialize, Debug, Serialize)]
 pub struct Paste {
     pub status: Option<i32>,
     pub id: String,
@@ -54,7 +58,7 @@ impl Decryptable for Paste {
     }
 }
 
-#[derive(Deserialize, Debug, Serialize)]
+#[derive(Default, Deserialize, Debug, Serialize)]
 pub struct Comment {
     pub id: String,
     pub pasteid: String,
@@ -77,17 +81,21 @@ impl Decryptable for Comment {
     }
 }
 
-#[derive(Deserialize, Debug, Serialize)]
+#[skip_serializing_none]
+#[derive(Default, Deserialize, Debug, Serialize)]
 pub struct Meta {
-    pub created: i32,
+    pub created: Option<i32>,
+    pub expire: Option<String>,
+    pub time_to_live: Option<i32>,
+    pub icon: Option<String>,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Default, Deserialize, Debug)]
 pub struct Data {
     pub cipher: Cipher,
     pub format: PasteFormat,
-    pub discuss: i8,
-    pub burn: i8,
+    pub discuss: u8,
+    pub burn: u8,
 }
 
 #[derive(Deserialize, Debug)]
@@ -103,8 +111,29 @@ pub struct Cipher {
     // test: String,
 }
 
+impl Default for Cipher {
+    fn default() -> Self {
+        let mut rng = rand_chacha::ChaCha20Rng::from_entropy();
+        let mut kdf_salt = [0u8; 8];
+        let mut nonce = [0u8; 16];
+        rng.fill_bytes(&mut kdf_salt);
+        rng.fill_bytes(&mut nonce);
+
+        Cipher {
+            cipher_iv: base64::encode(nonce),
+            kdf_salt: base64::encode(kdf_salt),
+            kdf_iterations: 100000,
+            kdf_keysize: 256,
+            cipher_tag_size: 128,
+            cipher_algo: "aes".to_string(),
+            cipher_mode: "gcm".to_string(),
+            compression_type: CompressionType::Zlib,
+        }
+    }
+}
+
 #[skip_serializing_none]
-#[derive(Deserialize, Debug, Serialize)]
+#[derive(Default, Deserialize, Debug, Serialize)]
 pub struct DecryptedPaste {
     pub paste: String,
     pub attachment: Option<String>,
