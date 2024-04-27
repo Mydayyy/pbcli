@@ -31,12 +31,24 @@ pub struct Opts {
     ))]
     pub size_limit: Option<u64>,
 
-    #[clap(long)]
+    #[clap(long, help("richer output: for delete_url, comments, etc"))]
     pub json: bool,
     #[clap(long, conflicts_with = "discussion")]
+    #[clap(help("enable burn on read for new paste"))]
     pub burn: bool,
     #[clap(long)]
+    #[clap(help("enable discussion for new paste"))]
     pub discussion: bool,
+
+    #[clap(long, requires("url"))]
+    #[clap(help("make new comment on existing paste"))]
+    pub comment: bool,
+    #[clap(long, requires("comment"), value_name = "nickname")]
+    #[clap(help("use this nick for comment"))]
+    pub comment_as: Option<String>,
+    #[clap(long, requires("comment"), value_name = "parentid")]
+    #[clap(help("reply to this parent comment"))]
+    pub comment_to: Option<String>,
 
     #[clap(long, parse(from_os_str), value_name = "FILE")]
     pub download: Option<std::path::PathBuf>,

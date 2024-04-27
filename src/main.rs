@@ -3,7 +3,7 @@ use data_url::DataUrl;
 use pbcli::api::API;
 use pbcli::error::{PasteError, PbResult};
 use pbcli::opts::Opts;
-use pbcli::privatebin::{DecryptedCommentsMap, DecryptedPaste};
+use pbcli::privatebin::{DecryptedComment, DecryptedCommentsMap, DecryptedPaste};
 use pbcli::util::check_filesize;
 use serde_json::Value;
 use std::io::IsTerminal;
@@ -146,12 +146,42 @@ fn handle_post(opts: &Opts) -> PbResult<()> {
     Ok(())
 }
 
+fn handle_comment(opts: &Opts) -> PbResult<()> {
+    let url = opts.get_url();
+    let paste_id = url.query().unwrap();
+    let fragment = url.fragment().ok_or(PasteError::MissingDecryptionKey)?;
+    // '-' character may be found at start of fragment. This should be stripped.
+    // It is used to activate "warn before read" feature for burn on read pastes.
+    let key = fragment.strip_prefix('-').unwrap_or(fragment);
+
+    let stdin = get_stdin()?;
+    let api = API::new(url.clone(), opts.clone());
+    let content = DecryptedComment {
+        comment: stdin,
+        nickname: opts.comment_as.clone(),
+    };
+    let parent_id = &opts.comment_to.clone().unwrap_or(paste_id.into());
+    let password = &opts.password.clone().unwrap_or_default();
+
+    api.post_comment(&content, paste_id, parent_id, key, password, opts)?;
+
+    Ok(())
+}
+
 fn main() -> PbResult<()> {
     let args = pbcli::config::get_args();
     let opts: Opts = Opts::parse_from(args);
 
     let url_has_query = opts.get_url().query().is_some();
     if url_has_query {
+        if opts.comment {
+            handle_comment(&opts)?;
+            // show paste with comments after commenting
+            if opts.json {
+                handle_get(&opts)?;
+            }
+            return Ok(());
+        }
         handle_get(&opts)?;
     } else {
         handle_post(&opts)?;

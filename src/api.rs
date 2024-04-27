@@ -157,24 +157,25 @@ impl API {
     pub fn post_comment(
         &self,
         content: &DecryptedComment,
-        pasteid: &str,
-        parentid: &str,
+        paste_id: &str,
+        parent_id: &str,
         bs58key: &str,
         password: &str,
         opts: &Opts,
     ) -> PbResult<PostCommentResponse> {
         let mut comment = Comment {
             v: 2,
-            pasteid: pasteid.into(),
-            parentid: parentid.into(),
+            pasteid: paste_id.into(),
+            parentid: parent_id.into(),
             ..Default::default()
         };
         let cipher = &comment.adata;
         let adata = &comment.adata;
+        let paste_passphrase = bs58::decode(bs58key).into_vec()?;
 
         let encrypted_content = encrypt(
             &serde_json::to_string(content)?,
-            &base64::decode(bs58key)?,
+            &paste_passphrase,
             password,
             &base64::decode(&cipher.kdf_salt)?,
             &base64::decode(&cipher.cipher_iv)?,
