@@ -5,6 +5,7 @@ use crate::error::PbResult;
 use serde::ser::{SerializeTuple, Serializer};
 use serde::Deserialize;
 use serde::Serialize;
+use serde_json::json;
 use serde_with::skip_serializing_none;
 use url::Url;
 
@@ -113,11 +114,17 @@ pub struct DecryptedPaste {
 }
 
 #[skip_serializing_none]
-#[derive(Deserialize, Debug, Serialize)]
+#[derive(Default, Deserialize, Debug, Serialize)]
 pub struct DecryptedComment {
     pub comment: String,
     pub nickname: Option<String>,
 }
+
+/// comment.id -> decrypted_comment
+type DecryptedCommentsMap = HashMap<String, DecryptedComment>;
+
+/// comment.id -> [children comment.id]
+type CommentsAdjacencyMap = HashMap<String, Vec<String>>;
 
 #[derive(Deserialize, Debug, Serialize, Clone)]
 pub struct PostPasteResponse {
@@ -168,17 +175,17 @@ impl Paste {
         crate::crypto::decrypt_with_password(self, &key, password)
     }
 
-    /// returns a mapping: comment.id -> decrypted_comment
-    pub fn decrypt_comments(&self, bs58_key: &str) -> PbResult<HashMap<String, DecryptedComment>> {
+    /// Returns a mapping: comment.id -> decrypted_comment
+    pub fn decrypt_comments(&self, bs58_key: &str) -> PbResult<DecryptedCommentsMap> {
         self.decrypt_comments_with_password(bs58_key, "")
     }
 
-    /// returns a mapping: comment.id -> decrypted_comment
+    /// Returns a mapping: comment.id -> decrypted_comment
     pub fn decrypt_comments_with_password(
         &self,
         bs58_key: &str,
         password: &str,
-    ) -> PbResult<HashMap<String, DecryptedComment>> {
+    ) -> PbResult<DecryptedCommentsMap> {
         let mut decrypted_comments = HashMap::new();
         if let Some(comments) = &self.comments {
             for comment in comments {
@@ -187,6 +194,53 @@ impl Paste {
             }
         };
         Ok(decrypted_comments)
+    }
+    /// Returns a mapping: comment.id -> [children comment.id]
+    pub fn comments_adjacency_map(&self) -> PbResult<CommentsAdjacencyMap> {
+        let mut comment_adjacency: HashMap<String, Vec<String>> = HashMap::new();
+        if let Some(comments) = &self.comments {
+            for c in comments {
+                let id = c.id.clone();
+                let parentid = if c.parentid == c.pasteid {
+                    "".to_owned()
+                } else {
+                    c.parentid.clone()
+                };
+                comment_adjacency.entry(parentid).or_default().push(id);
+            }
+        }
+        Ok(comment_adjacency)
+    }
+
+    /// Returns a formatted json tree of decrypted comments
+    pub fn comments_formatted_tree(
+        &self,
+        decrypted_comments: &DecryptedCommentsMap,
+        comment_adjacency: &CommentsAdjacencyMap,
+    ) -> PbResult<String> {
+        fn format_comments_below_id(
+            id: &str,
+            decrypted_comments: &DecryptedCommentsMap,
+            comment_adjacency: &CommentsAdjacencyMap,
+        ) -> serde_json::Value {
+            let formatted_children: Vec<serde_json::Value> = comment_adjacency
+                .get(id)
+                .unwrap_or(&Vec::new())
+                .iter()
+                .map(|child_id| {
+                    format_comments_below_id(child_id, decrypted_comments, comment_adjacency)
+                })
+                .collect();
+            json!({
+                id: {
+                    "comment": decrypted_comments.get(id).unwrap_or(&DecryptedComment::default()).comment,
+                    "nickname": decrypted_comments.get(id).unwrap_or(&DecryptedComment::default()).nickname,
+                    "replies": formatted_children
+                }
+            })
+        }
+        let top_level = format_comments_below_id("", decrypted_comments, comment_adjacency);
+        serde_json::to_string_pretty(&top_level).map_err(|e| e.into())
     }
 }
 
