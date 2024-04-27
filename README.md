@@ -1,3 +1,8 @@
+> [!NOTE]
+> This branch is frequently rebased on top of upstream master.  
+> You may rely only on the tip (HEAD) commit to be functional.  
+> But do not depend on it's history to be static or consistent.
+
 Privatebin CLI
 ------------
 pbcli is a command line client which allows to upload and download
