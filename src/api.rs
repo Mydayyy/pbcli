@@ -127,8 +127,8 @@ impl API {
             &serde_json::to_string(content)?,
             &paste_passphrase.into(),
             password,
-            &base64::decode(&cipher.kdf_salt)?,
-            &base64::decode(&cipher.cipher_iv)?,
+            &cipher.vec_kdf_salt()?,
+            &cipher.vec_cipher_iv()?,
             cipher.kdf_iterations,
             &serde_json::to_string(&adata)?,
         )?;
@@ -177,8 +177,8 @@ impl API {
             &serde_json::to_string(content)?,
             &paste_passphrase,
             password,
-            &base64::decode(&cipher.kdf_salt)?,
-            &base64::decode(&cipher.cipher_iv)?,
+            &cipher.vec_kdf_salt()?,
+            &cipher.vec_cipher_iv()?,
             cipher.kdf_iterations,
             &serde_json::to_string(&adata)?,
         )?;

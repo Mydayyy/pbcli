@@ -29,13 +29,13 @@ pub fn decrypt_with_password<DecryptedT: serde::de::DeserializeOwned>(
     let cipher_mode = &decryptable.get_cipher().cipher_mode;
     let kdf_keysize = decryptable.get_cipher().kdf_keysize;
 
-    let salt = base64::decode(&decryptable.get_cipher().kdf_salt)?;
+    let salt = &decryptable.get_cipher().vec_kdf_salt()?;
     let iterations = std::num::NonZeroU32::new(decryptable.get_cipher().kdf_iterations).unwrap();
 
     let key = [key, password.as_bytes()].concat();
 
     let mut derived_key = [0u8; 32];
-    derive_key(iterations, &salt, &key, &mut derived_key);
+    derive_key(iterations, salt, &key, &mut derived_key);
 
     match (&cipher_algo[..], &cipher_mode[..], kdf_keysize) {
         ("aes", "gcm", 256) => {
@@ -86,7 +86,7 @@ pub fn encrypt(
 fn decrypt_aes_256_gcm(decryptable: &impl Decryptable, derived_key: &[u8]) -> PbResult<Vec<u8>> {
     type Cipher = aes_gcm::AesGcm<aes_gcm::aes::Aes256, typenum::U16>;
     let ciphertext = base64::decode(decryptable.get_ct())?;
-    let nonce = base64::decode(&decryptable.get_cipher().cipher_iv)?;
+    let nonce = decryptable.get_cipher().vec_cipher_iv()?;
 
     let cipher = Cipher::new(Key::from_slice(derived_key));
     let adata_str = decryptable.get_adata_str();

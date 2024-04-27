@@ -132,6 +132,17 @@ impl Default for Cipher {
     }
 }
 
+impl Cipher {
+    /// get vector of bytes representation
+    pub fn vec_cipher_iv(&self) -> PbResult<Vec<u8>> {
+        base64::decode(&self.cipher_iv).map_err(|e| e.into())
+    }
+    /// get vector of bytes representation
+    pub fn vec_kdf_salt(&self) -> PbResult<Vec<u8>> {
+        base64::decode(&self.kdf_salt).map_err(|e| e.into())
+    }
+}
+
 #[skip_serializing_none]
 #[derive(Default, Deserialize, Debug, Serialize)]
 pub struct DecryptedPaste {
