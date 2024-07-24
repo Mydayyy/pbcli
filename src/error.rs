@@ -8,8 +8,9 @@ use std::fmt::Formatter;
 pub type PbError = PasteError;
 pub type PbResult<T> = std::result::Result<T, PbError>;
 
-#[derive(Debug, uniffi::Error)]
-#[uniffi(flat_error)]
+#[derive(Debug)]
+#[cfg_attr(feature = "uniffi", derive(uniffi::Error))]
+#[cfg_attr(feature = "uniffi", uniffi(flat_error))]
 pub enum PasteError {
     CipherNotImplemented {
         cipher_algo: String,
