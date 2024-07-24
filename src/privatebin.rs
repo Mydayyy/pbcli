@@ -20,7 +20,8 @@ pub enum CompressionType {
     Zlib,
 }
 
-#[derive(Default, clap::ArgEnum, Deserialize, Debug, Serialize, Clone, Copy, uniffi::Enum)]
+#[derive(Default, clap::ArgEnum, Deserialize, Debug, Serialize, Clone, Copy)]
+#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
 pub enum PasteFormat {
     #[default]
     #[serde(rename = "plaintext")]
@@ -34,7 +35,8 @@ pub enum PasteFormat {
 }
 
 #[skip_serializing_none]
-#[derive(Deserialize, Debug, Serialize, uniffi::Object)]
+#[derive(Deserialize, Debug, Serialize)]
+#[cfg_attr(feature = "uniffi", derive(uniffi::Object))]
 pub struct Paste {
     pub status: Option<i32>,
     pub id: String,
@@ -144,7 +146,8 @@ impl Cipher {
 }
 
 #[skip_serializing_none]
-#[derive(Deserialize, Debug, Serialize, uniffi::Record)]
+#[derive(Deserialize, Debug, Serialize)]
+#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
 pub struct DecryptedPaste {
     pub paste: String,
     pub attachment: Option<String>,
@@ -152,7 +155,8 @@ pub struct DecryptedPaste {
 }
 
 #[skip_serializing_none]
-#[derive(Default, Deserialize, Debug, Serialize, uniffi::Record)]
+#[derive(Default, Deserialize, Debug, Serialize)]
+#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
 pub struct DecryptedComment {
     pub comment: String,
     pub nickname: Option<String>,
@@ -172,7 +176,8 @@ pub struct PostCommentResponse {
     pub url: String,
 }
 
-#[derive(Deserialize, Debug, Serialize, Clone, uniffi::Object)]
+#[derive(Deserialize, Debug, Serialize, Clone)]
+#[cfg_attr(feature = "uniffi", derive(uniffi::Object))]
 pub struct PostPasteResponse {
     pub deletetoken: String,
     pub id: String,
@@ -182,7 +187,7 @@ pub struct PostPasteResponse {
     pub bs58key: String,
 }
 
-#[uniffi::export]
+#[cfg_attr(feature = "uniffi", uniffi::export)]
 impl PostPasteResponse {
     /// Return full paste url, i.e (base + ?id + #bs58key)
     pub fn to_paste_url(&self) -> url::Url {
@@ -208,7 +213,7 @@ impl PostPasteResponse {
     }
 }
 
-#[uniffi::export]
+#[cfg_attr(feature = "uniffi", uniffi::export)]
 impl Paste {
     pub fn decrypt(&self, bs58_key: &str) -> PbResult<DecryptedPaste> {
         self.decrypt_with_password(bs58_key, "")

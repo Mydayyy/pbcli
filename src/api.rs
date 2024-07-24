@@ -8,15 +8,15 @@ use rand_chacha::rand_core::{RngCore, SeedableRng};
 use reqwest::{Method, Url};
 use std::str::FromStr;
 
-#[derive(uniffi::Object)]
+#[cfg_attr(feature = "uniffi", derive(uniffi::Object))]
 pub struct API {
     base: Url,
     opts: Opts,
 }
 
-#[uniffi::export]
+#[cfg_attr(feature = "uniffi", uniffi::export)]
 impl API {
-    #[uniffi::constructor]
+    #[cfg_attr(feature = "uniffi", uniffi::constructor)]
     pub fn new(mut url: Url, opts: Opts) -> Self {
         url.set_fragment(None);
         url.set_query(None);
@@ -91,7 +91,7 @@ impl API {
     }
 }
 
-#[uniffi::export]
+#[cfg_attr(feature = "uniffi", uniffi::export)]
 impl API {
     pub fn get_paste(&self, paste_id: &str) -> PbResult<Paste> {
         let url = reqwest::Url::parse_with_params(self.base.as_str(), [("pasteid", paste_id)])?;
