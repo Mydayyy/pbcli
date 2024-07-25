@@ -35,7 +35,7 @@ pub enum PasteFormat {
 }
 
 #[skip_serializing_none]
-#[derive(Deserialize, Debug, Serialize)]
+#[derive(Default, Deserialize, Debug, Serialize)]
 #[cfg_attr(feature = "uniffi", derive(uniffi::Object))]
 pub struct Paste {
     pub status: Option<i32>,
@@ -170,6 +170,7 @@ pub type CommentsAdjacencyMap = HashMap<String, Vec<String>>;
 
 
 #[derive(Deserialize, Debug, Serialize, Clone)]
+#[cfg_attr(feature = "uniffi", derive(uniffi::Object))]
 pub struct PostCommentResponse {
     pub id: String,
     pub status: u32,
