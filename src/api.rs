@@ -207,7 +207,7 @@ impl API {
         }
     }
 
-    pub fn base(&self) -> &Url {
-        &self.base
+    pub fn base(&self) -> Url {
+        self.base.clone()
     }
 }
