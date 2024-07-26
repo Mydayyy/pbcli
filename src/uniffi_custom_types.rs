@@ -1,5 +1,5 @@
-use std::path::PathBuf;
 use reqwest::Url;
+use std::path::PathBuf;
 
 use crate::UniffiCustomTypeConverter;
 // Custom UniFFI types
@@ -11,7 +11,7 @@ impl UniffiCustomTypeConverter for Url {
     type Builtin = String;
 
     fn into_custom(val: Self::Builtin) -> uniffi::Result<Self> {
-        val.parse::<Url>().map_err(|e | {e.into()})
+        val.parse::<Url>().map_err(|e| e.into())
     }
 
     fn from_custom(obj: Self) -> Self::Builtin {
