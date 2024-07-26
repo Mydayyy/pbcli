@@ -168,7 +168,6 @@ pub type DecryptedCommentsMap = HashMap<String, DecryptedComment>;
 /// comment.id -> [children comment.id]
 pub type CommentsAdjacencyMap = HashMap<String, Vec<String>>;
 
-
 #[derive(Deserialize, Debug, Serialize, Clone)]
 #[cfg_attr(feature = "uniffi", derive(uniffi::Object))]
 pub struct PostCommentResponse {
