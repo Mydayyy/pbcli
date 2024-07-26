@@ -47,12 +47,15 @@ pub struct Opts {
     #[clap(help("enable discussion for new paste"))]
     pub discussion: bool,
 
+    #[cfg_attr(feature = "uniffi", uniffi(default = false))]
     #[clap(long, requires("url"))]
     #[clap(help("make new comment on existing paste"))]
     pub comment: bool,
+    #[cfg_attr(feature = "uniffi", uniffi(default = None))]
     #[clap(long, requires("comment"), value_name = "nickname")]
     #[clap(help("use this nick for comment"))]
     pub comment_as: Option<String>,
+    #[cfg_attr(feature = "uniffi", uniffi(default = None))]
     #[clap(long, requires("comment"), value_name = "parentid")]
     #[clap(help("reply to this parent comment"))]
     pub comment_to: Option<String>,
