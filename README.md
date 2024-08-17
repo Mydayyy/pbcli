@@ -149,3 +149,8 @@ Example config:
   - Basic auth
   - ~~oauth~~ Added in v2.2.0 using Resource Owner Password Credential Grant flow
 - ~~Add support for file attachments~~ Added in v2.1.0
+
+
+### Credits
+
+- [nain](https://github.com/nain-F49FF806) for the uniffi implementation
