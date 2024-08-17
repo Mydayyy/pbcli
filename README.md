@@ -142,6 +142,16 @@ Example config:
 --expire=1month
 ```
 
+
+### Uniffi
+
+This projects offers uniffi bindings. In order to enable them, 
+build the library with the uniffi feature enabled. 
+You can learn more about uniffi [here](https://github.com/mozilla/uniffi-rs). 
+Additionally to see an example integration of pbcli with uniffi 
+enabled into an android project you can check out [sharepaste](https://github.com/nain-F49FF806/sharepaste.oo).
+
+
 ### Roadmap
 
 - Descriptive error messages
