@@ -85,7 +85,7 @@ echo 'TestPaste' | pbcli --host https://privatebin.net/ --burn
 ---
 #### CLI Help:
 ```
-pbcli 2.3.1
+pbcli 2.4.0
 
 Mydayyy <dev@mydayyy.eu>
 
