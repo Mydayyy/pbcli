@@ -3,20 +3,25 @@ use std::ffi::OsString;
 use std::io::BufRead;
 use std::path::PathBuf;
 
+// TODO: Split in early stage config parsing and late stage
 fn get_config_path() -> Option<OsString> {
-    let home = env::home_dir()?;
-
+    // let home = env::home_dir()?;
 
     match env::var_os("PBCLI_CONFIG_PATH") {
         Some(path) => return Some(path),
         None => {}
     };
 
+    log::debug!("PBCLI_CONFIG_PATH not set");
+
     let project_dirs = directories::ProjectDirs::from("eu", "mydayyy", env!("CARGO_PKG_NAME"))?;
     let user_config_dir = project_dirs.config_local_dir();
+    let user_config_file = user_config_dir.join("config");
 
-    if std::path::Path::new(user_config_dir).exists() {
-        return Some(user_config_dir.into());
+    log::debug!("looking for config in {}", user_config_file.display());
+
+    if std::path::Path::new(&user_config_file).exists() {
+        return Some(user_config_file.into());
     };
 
     None
@@ -25,10 +30,15 @@ fn get_config_path() -> Option<OsString> {
 pub fn get_args() -> Vec<OsString> {
     let mut env_args = std::env::args_os();
 
-    let path = match env::var_os("PBCLI_CONFIG_PATH") {
-        None => return env_args.collect(),
+    let path = match get_config_path() {
+        None => {
+            log::debug!("no config found");;
+            return env_args.collect();
+        }
         Some(path) => path,
     };
+
+    log::debug!("using config {}", path.to_string_lossy());
 
     let handle = match std::fs::File::open(path) {
         Ok(file) => file,

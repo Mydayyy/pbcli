@@ -8,6 +8,7 @@ use pbcli::util::check_filesize;
 use serde_json::Value;
 use std::io::IsTerminal;
 use std::io::{Read, Write};
+mod logger;
 
 fn get_stdin() -> std::io::Result<String> {
     if std::io::stdin().is_terminal() {
@@ -169,6 +170,9 @@ fn handle_comment(opts: &Opts) -> PbResult<()> {
 }
 
 fn main() -> PbResult<()> {
+    crate::logger::SimpleLogger::init()?;
+    log::set_max_level(log::LevelFilter::Debug);
+
     let args = pbcli::config::get_args();
     let opts: Opts = Opts::parse_from(args);
 

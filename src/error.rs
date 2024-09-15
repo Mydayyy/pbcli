@@ -4,6 +4,7 @@ use miniz_oxide::inflate::TINFLStatus;
 use serde_json::Error;
 use std::fmt;
 use std::fmt::Formatter;
+use log::SetLoggerError;
 
 pub type PbError = PasteError;
 pub type PbResult<T> = std::result::Result<T, PbError>;
@@ -35,6 +36,7 @@ pub enum PasteError {
     NotAFile,
     InvalidTokenType(String),
     OidcBadRequest(serde_json::Value),
+    LoggerInit(log::SetLoggerError),
 }
 
 impl std::error::Error for PasteError {}
@@ -71,6 +73,9 @@ impl fmt::Display for PasteError {
                 write!(f, "Invalid token type: {}", token_type)
             }
             PasteError::OidcBadRequest(json) => write!(f, "{}", json),
+            PasteError::LoggerInit(err) => {
+                write!(f, "Failed to init logger: {}", err)
+            }
         }
     }
 }
@@ -126,5 +131,11 @@ impl From<bs58::decode::Error> for PasteError {
 impl From<DataUrlError> for PasteError {
     fn from(err: DataUrlError) -> Self {
         PasteError::InvalidAttachment(err)
+    }
+}
+
+impl From<SetLoggerError> for PasteError {
+    fn from(err: SetLoggerError) -> Self {
+        PasteError::LoggerInit(err)
     }
 }

@@ -10,8 +10,10 @@ Project home page: https://github.com/Mydayyy/pbcli";
 
 #[derive(Debug, Parser, Clone)]
 #[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
-#[clap(setting = clap::AppSettings::AllArgsOverrideSelf, version = env ! ("CARGO_PKG_VERSION"), author = "Mydayyy <dev@mydayyy.eu>", about = ABOUT)]
-#[clap(term_width(if let Some((terminal_size::Width(w), _)) = terminal_size::terminal_size() { w as usize } else { 120 }))]
+#[clap(setting = clap::AppSettings::AllArgsOverrideSelf, version = env ! ("CARGO_PKG_VERSION"), author = "Mydayyy <dev@mydayyy.eu>", about = ABOUT
+)]
+#[clap(term_width(if let Some((terminal_size::Width(w), _)) = terminal_size::terminal_size() { w as usize } else { 120 }
+))]
 #[clap(rename_all = "kebab-case")]
 pub struct Opts {
     #[clap(required_unless_present("host"), parse(try_from_str))]
@@ -95,6 +97,11 @@ pub struct Opts {
     #[clap(long)]
     #[clap(help("password to send to the token endpoint"))]
     pub oidc_password: Option<String>,
+
+    #[cfg_attr(feature = "uniffi", uniffi(default = false))]
+    #[clap(long)]
+    #[clap(help("print debug output to stderr"))]
+    pub debug: bool,
 }
 
 impl Opts {
