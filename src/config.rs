@@ -1,6 +1,26 @@
 use std::env;
 use std::ffi::OsString;
 use std::io::BufRead;
+use std::path::PathBuf;
+
+fn get_config_path() -> Option<OsString> {
+    let home = env::home_dir()?;
+
+
+    match env::var_os("PBCLI_CONFIG_PATH") {
+        Some(path) => return Some(path),
+        None => {}
+    };
+
+    let project_dirs = directories::ProjectDirs::from("eu", "mydayyy", env!("CARGO_PKG_NAME"))?;
+    let user_config_dir = project_dirs.config_local_dir();
+
+    if std::path::Path::new(user_config_dir).exists() {
+        return Some(user_config_dir.into());
+    };
+
+    None
+}
 
 pub fn get_args() -> Vec<OsString> {
     let mut env_args = std::env::args_os();
