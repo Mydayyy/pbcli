@@ -2,7 +2,7 @@ use log::{Metadata, Record};
 use log::SetLoggerError;
 
 pub(crate) struct SimpleLogger(());
-const LOGGER: &'static SimpleLogger = &SimpleLogger(());
+const LOGGER: &SimpleLogger = &SimpleLogger(());
 
 pub fn init() -> Result<(), SetLoggerError> {
     log::set_logger(&LOGGER)

@@ -10,13 +10,11 @@ fn is_valid_config(p: &Path) -> bool {
 
 fn get_config_path(skip_default_locations: bool) -> Option<OsString> {
     // check if config env var is set and use it
-    match env::var_os("PBCLI_CONFIG_PATH") {
-        Some(path) => return {
-            log::debug!("using config pointed to by PBCLI_CONFIG_PATH");
-            Some(path)
-        },
-        None => {}
+    if let Some(path) = env::var_os("PBCLI_CONFIG_PATH") {
+        log::debug!("using config pointed to by PBCLI_CONFIG_PATH");
+        return Some(path);
     };
+
 
     log::debug!("PBCLI_CONFIG_PATH not set");
 
