@@ -1,4 +1,3 @@
-use std::ffi::OsString;
 use clap::Parser;
 use data_url::DataUrl;
 use pbcli::api::API;
@@ -7,9 +6,9 @@ use pbcli::opts::Opts;
 use pbcli::privatebin::{DecryptedComment, DecryptedCommentsMap, DecryptedPaste};
 use pbcli::util::check_filesize;
 use serde_json::Value;
+use std::ffi::OsString;
 use std::io::IsTerminal;
 use std::io::{Read, Write};
-use log::LevelFilter;
 
 mod logger;
 

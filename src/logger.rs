@@ -1,5 +1,5 @@
-use log::{Record, Level, Metadata};
-use log::{SetLoggerError, LevelFilter};
+use log::{Metadata, Record};
+use log::SetLoggerError;
 
 pub(crate) struct SimpleLogger(());
 const LOGGER: &'static SimpleLogger = &SimpleLogger(());
@@ -16,7 +16,7 @@ impl SimpleLogger {
 }
 
 impl log::Log for SimpleLogger {
-    fn enabled(&self, metadata: &Metadata) -> bool {
+    fn enabled(&self, _metadata: &Metadata) -> bool {
         true
     }
 
