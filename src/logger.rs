@@ -4,11 +4,6 @@ use log::SetLoggerError;
 pub(crate) struct SimpleLogger(());
 const LOGGER: &SimpleLogger = &SimpleLogger(());
 
-pub fn init() -> Result<(), SetLoggerError> {
-    log::set_logger(&LOGGER)
-}
-
-
 impl SimpleLogger {
     pub(crate) fn init() -> Result<(), log::SetLoggerError> {
         log::set_logger(LOGGER)
