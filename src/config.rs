@@ -8,8 +8,7 @@ fn is_valid_config(p: &Path) -> bool {
     p.exists() && p.is_file()
 }
 
-// TODO: Split in early stage config parsing and late stage
-fn get_config_path() -> Option<OsString> {
+fn get_config_path(skip_default_locations: bool) -> Option<OsString> {
     // check if config env var is set and use it
     match env::var_os("PBCLI_CONFIG_PATH") {
         Some(path) => return {
@@ -20,6 +19,11 @@ fn get_config_path() -> Option<OsString> {
     };
 
     log::debug!("PBCLI_CONFIG_PATH not set");
+
+    if skip_default_locations {
+        log::debug!("skip_default_locations set. not checking default config locations");
+        return None;
+    }
 
     // check user specific config location
     let project_dirs = directories::ProjectDirs::from("eu", "mydayyy", env!("CARGO_PKG_NAME"))?;
@@ -36,13 +40,11 @@ fn get_config_path() -> Option<OsString> {
     None
 }
 
-pub fn get_args() -> Vec<OsString> {
-    let mut env_args = std::env::args_os();
-
-    let path = match get_config_path() {
+pub fn get_config_args(skip_default_locations: bool) -> Vec<OsString> {
+    let path = match get_config_path(skip_default_locations) {
         None => {
             log::debug!("no config found");
-            return env_args.collect();
+            return vec![];
         }
         Some(path) => path,
     };
@@ -53,7 +55,7 @@ pub fn get_args() -> Vec<OsString> {
         Ok(file) => file,
         Err(_) => {
             log::debug!("failed to open config. using cli args only");
-            return env_args.collect();
+            return vec![];
         } // TODO: Raise error
     };
 
@@ -72,11 +74,9 @@ pub fn get_args() -> Vec<OsString> {
         config_args.push(line.into());
     });
 
-    if let Some(binary_path) = env_args.next() {
-        config_args.insert(0, binary_path);
-    }
-
-    config_args.extend(env_args);
-
     config_args
+}
+
+pub fn get_cli_args() -> Vec<OsString> {
+    std::env::args_os().collect()
 }

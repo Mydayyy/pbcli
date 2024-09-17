@@ -102,6 +102,11 @@ pub struct Opts {
     #[clap(long)]
     #[clap(help("print debug output to stderr"))]
     pub debug: bool,
+
+    #[cfg_attr(feature = "uniffi", uniffi(default = false))]
+    #[clap(long)]
+    #[clap(help("do not look for config in default locations"))]
+    pub no_default_config: bool,
 }
 
 impl Opts {
