@@ -1,5 +1,4 @@
 use log::{Metadata, Record};
-use log::SetLoggerError;
 
 pub(crate) struct SimpleLogger(());
 const LOGGER: &SimpleLogger = &SimpleLogger(());
