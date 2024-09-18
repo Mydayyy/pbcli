@@ -15,7 +15,6 @@ fn get_config_path(skip_default_locations: bool) -> Option<OsString> {
         return Some(path);
     };
 
-
     log::debug!("PBCLI_CONFIG_PATH not set");
 
     if skip_default_locations {
@@ -27,12 +26,16 @@ fn get_config_path(skip_default_locations: bool) -> Option<OsString> {
     let project_dirs = directories::ProjectDirs::from("eu", "mydayyy", env!("CARGO_PKG_NAME"))?;
     let user_config_dir = project_dirs.config_local_dir();
     let user_config_file = user_config_dir.join("config");
-    if is_valid_config(&user_config_file) { return Some(user_config_file.into()); }
+    if is_valid_config(&user_config_file) {
+        return Some(user_config_file.into());
+    }
 
     // linux only: check /etc/pbcli/config
     if cfg!(unix) {
         let system_config_file = PathBuf::from("/etc/pbcli/config");
-        if is_valid_config(&system_config_file) { return Some(system_config_file.into()); }
+        if is_valid_config(&system_config_file) {
+            return Some(system_config_file.into());
+        }
     }
 
     None

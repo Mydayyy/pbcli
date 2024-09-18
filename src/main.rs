@@ -177,7 +177,6 @@ fn main() -> PbResult<()> {
     let mut env_args = pbcli::config::get_cli_args();
     let mut opts: Opts = Opts::parse_from(&env_args);
 
-
     if opts.debug {
         log::set_max_level(log::LevelFilter::Debug);
     }

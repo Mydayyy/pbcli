@@ -1,10 +1,10 @@
 use base64::DecodeError;
 use data_url::DataUrlError;
+use log::SetLoggerError;
 use miniz_oxide::inflate::TINFLStatus;
 use serde_json::Error;
 use std::fmt;
 use std::fmt::Formatter;
-use log::SetLoggerError;
 
 pub type PbError = PasteError;
 pub type PbResult<T> = std::result::Result<T, PbError>;
