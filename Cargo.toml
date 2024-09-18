@@ -4,7 +4,7 @@ description = """
 pbcli is a command line client which allows to upload and download
 pastes from privatebin directly from the command line.
 """
-version = "2.4.0"
+version = "2.5.0"
 authors = ["Mydayyy"]
 edition = "2021"
 documentation = "https://github.com/Mydayyy/pbcli"
@@ -47,3 +47,5 @@ terminal_size = "0.1.17"
 parse-size = { version = "1.0.0", features = ["std"] }
 uniffi = { version = "0.28.0", optional = true, features = ["cli"] }
 openssl = { version = "0.10", features = ["vendored"] }
+directories = "5.0.1"
+log = "0.4.22"

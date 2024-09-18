@@ -6,8 +6,11 @@ use pbcli::opts::Opts;
 use pbcli::privatebin::{DecryptedComment, DecryptedCommentsMap, DecryptedPaste};
 use pbcli::util::check_filesize;
 use serde_json::Value;
+use std::ffi::OsString;
 use std::io::IsTerminal;
 use std::io::{Read, Write};
+
+mod logger;
 
 fn get_stdin() -> std::io::Result<String> {
     if std::io::stdin().is_terminal() {
@@ -169,8 +172,21 @@ fn handle_comment(opts: &Opts) -> PbResult<()> {
 }
 
 fn main() -> PbResult<()> {
-    let args = pbcli::config::get_args();
-    let opts: Opts = Opts::parse_from(args);
+    crate::logger::SimpleLogger::init()?;
+
+    let mut env_args = pbcli::config::get_cli_args();
+    let mut opts: Opts = Opts::parse_from(&env_args);
+
+    if opts.debug {
+        log::set_max_level(log::LevelFilter::Debug);
+    }
+
+    let config_args = pbcli::config::get_config_args(opts.no_default_config);
+    let mut merged_args: Vec<OsString> = vec![];
+    merged_args.extend(env_args.drain(0..1));
+    merged_args.extend(config_args);
+    merged_args.extend(env_args);
+    opts.update_from(merged_args);
 
     let url_has_query = opts.get_url().query().is_some();
     if url_has_query {
