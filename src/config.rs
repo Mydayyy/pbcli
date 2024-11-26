@@ -81,3 +81,14 @@ pub fn get_config_args(skip_default_locations: bool) -> Vec<OsString> {
 pub fn get_cli_args() -> Vec<OsString> {
     std::env::args_os().collect()
 }
+
+fn has_flag(flag_name: &str) -> bool {
+    get_cli_args().contains(&OsString::from(flag_name))
+}
+pub fn has_debug_flag() -> bool {
+    has_flag("--debug")
+}
+
+pub fn has_skip_default_config_flag() -> bool {
+    has_flag("--skip-default-config")
+}

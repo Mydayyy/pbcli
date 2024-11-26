@@ -174,19 +174,18 @@ fn handle_comment(opts: &Opts) -> PbResult<()> {
 fn main() -> PbResult<()> {
     crate::logger::SimpleLogger::init()?;
 
-    let mut env_args = pbcli::config::get_cli_args();
-    let mut opts: Opts = Opts::parse_from(&env_args);
-
-    if opts.debug {
+    if pbcli::config::has_debug_flag() {
         log::set_max_level(log::LevelFilter::Debug);
     }
 
-    let config_args = pbcli::config::get_config_args(opts.no_default_config);
+    let config_args = pbcli::config::get_config_args(pbcli::config::has_skip_default_config_flag());
+    let mut env_args = pbcli::config::get_cli_args();
     let mut merged_args: Vec<OsString> = vec![];
     merged_args.extend(env_args.drain(0..1));
     merged_args.extend(config_args);
     merged_args.extend(env_args);
-    opts.update_from(merged_args);
+
+    let opts: Opts = Opts::parse_from(&merged_args);
 
     let url_has_query = opts.get_url().query().is_some();
     if url_has_query {
