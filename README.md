@@ -132,6 +132,7 @@ OPTIONS:
         --oidc-username <OIDC_USERNAME>      username to send to the token endpoint
         --overwrite                          overwrite the file given with --download if it already exists
         --password <PASSWORD>                
+        --scrape-expiries                    attempt scraping supported expiries of given host and exit
         --size-limit <SIZE_LIMIT>            Prompt if the paste exceeds the given size. Fail in non-interactive environments.
         --upload <FILE>                      
     -V, --version                            Print version information
