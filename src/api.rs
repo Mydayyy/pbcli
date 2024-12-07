@@ -76,11 +76,14 @@ impl API {
         &self,
         method: &str,
         url: Url,
+        json_request: bool,
     ) -> PbResult<reqwest::blocking::RequestBuilder> {
         let client = reqwest::blocking::Client::builder().build()?;
 
         let mut request = client.request(Method::from_str(method).unwrap(), url);
-        request = request.header("X-Requested-With", "JSONHttpRequest");
+        if json_request {
+            request = request.header("X-Requested-With", "JSONHttpRequest");
+        }
 
         if self.opts.oidc_token_url.is_some() {
             let access_token = self.get_oidc_access_token()?;
@@ -97,7 +100,7 @@ impl API {
     pub fn get_paste(&self, paste_id: &str) -> PbResult<Paste> {
         let url = reqwest::Url::parse_with_params(self.base.as_str(), [("pasteid", paste_id)])?;
         let value: serde_json::Value = self
-            .preconfigured_privatebin_request_builder("GET", url)?
+            .preconfigured_privatebin_request_builder("GET", url, true)?
             .send()?
             .json()?;
         let status: u32 = value.get("status").unwrap().as_u64().unwrap() as u32;
@@ -146,7 +149,7 @@ impl API {
 
         let url = self.base.clone();
         let response = self
-            .preconfigured_privatebin_request_builder("POST", url)?
+            .preconfigured_privatebin_request_builder("POST", url, true)?
             .body::<String>(serde_json::to_string(&paste).unwrap())
             .send()?;
         let mut rsv: serde_json::Value = response.json()?;
@@ -195,7 +198,7 @@ impl API {
 
         let url = self.base.clone();
         let response = self
-            .preconfigured_privatebin_request_builder("POST", url)?
+            .preconfigured_privatebin_request_builder("POST", url, true)?
             .body::<String>(serde_json::to_string(&comment).unwrap())
             .send()?;
         let rsv: serde_json::Value = response.json()?;
@@ -209,8 +212,10 @@ impl API {
     }
 
     pub fn scrape_expiries(&self) -> PbResult<Vec<String>> {
-        let client = reqwest::blocking::Client::new();
-        let response = client.get(self.base()).send()?;
+        let url = self.base.clone();
+        let response = self
+            .preconfigured_privatebin_request_builder("GET", url, false)?
+            .send()?;
         response.error_for_status_ref()?;
         let html = response.text()?;
         let document = Html::parse_document(&html);
