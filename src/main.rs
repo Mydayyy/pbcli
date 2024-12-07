@@ -172,8 +172,9 @@ fn handle_comment(opts: &Opts) -> PbResult<()> {
 }
 
 fn handle_scrape(opts: &Opts) -> PbResult<()> {
-    let url = opts.get_url().clone();
-    let expiries = API::scrape_expiries(url)?;
+    let url = opts.get_url();
+    let api = API::new(url.clone(), opts.clone());
+    let expiries = api.scrape_expiries()?;
     std::io::stdout().write_all(format!("{:?}", expiries).as_bytes())?;
     writeln!(std::io::stdout())?;
     Ok(())
