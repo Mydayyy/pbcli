@@ -148,7 +148,7 @@ impl API {
 
         let encrypted_content = encrypt(
             &serde_json::to_string(content)?,
-            &paste_passphrase.into(),
+            &paste_passphrase,
             password,
             &cipher.vec_kdf_salt()?,
             &cipher.vec_cipher_iv()?,

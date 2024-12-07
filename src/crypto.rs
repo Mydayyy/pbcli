@@ -53,7 +53,7 @@ pub fn decrypt_with_password<DecryptedT: serde::de::DeserializeOwned>(
 
 pub fn encrypt(
     content: &str,
-    key: &Vec<u8>,
+    key: &[u8],
     password: &str,
     salt: &[u8],
     nonce: &[u8],
