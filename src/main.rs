@@ -171,6 +171,15 @@ fn handle_comment(opts: &Opts) -> PbResult<()> {
     Ok(())
 }
 
+fn handle_scrape(opts: &Opts) -> PbResult<()> {
+    let url = opts.get_url();
+    let api = API::new(url.clone(), opts.clone());
+    let expiries = api.scrape_expiries()?;
+    std::io::stdout().write_all(format!("{:?}", expiries).as_bytes())?;
+    writeln!(std::io::stdout())?;
+    Ok(())
+}
+
 fn main() -> PbResult<()> {
     crate::logger::SimpleLogger::init()?;
 
@@ -186,6 +195,10 @@ fn main() -> PbResult<()> {
     merged_args.extend(env_args);
 
     let opts: Opts = Opts::parse_from(&merged_args);
+
+    if opts.scrape_expiries {
+        return handle_scrape(&opts);
+    }
 
     let url_has_query = opts.get_url().query().is_some();
     if url_has_query {

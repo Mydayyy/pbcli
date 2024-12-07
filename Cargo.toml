@@ -49,3 +49,4 @@ uniffi = { version = "0.28.0", optional = true, features = ["cli"] }
 openssl = { version = "0.10", features = ["vendored"] }
 directories = "5.0.1"
 log = "0.4.22"
+scraper = "0.21.0"

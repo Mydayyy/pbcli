@@ -107,6 +107,10 @@ pub struct Opts {
     #[clap(long)]
     #[clap(help("do not look for config in default locations"))]
     pub no_default_config: bool,
+
+    #[clap(long)]
+    #[clap(help("attempt scraping supported expiries of given host and exit"))]
+    pub scrape_expiries: bool,
 }
 
 impl Opts {
