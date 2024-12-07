@@ -187,6 +187,12 @@ fn main() -> PbResult<()> {
 
     let opts: Opts = Opts::parse_from(&merged_args);
 
+    if opts.scrape_expiries {
+        let expiries = API::scrape_expiries(opts.get_url().clone())?;
+        println!("{:?}", expiries);
+        return Ok(());
+    }
+
     let url_has_query = opts.get_url().query().is_some();
     if url_has_query {
         if opts.comment {

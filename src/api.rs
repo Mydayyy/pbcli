@@ -6,6 +6,7 @@ use crate::util::check_filesize;
 use crate::DecryptedPaste;
 use rand_chacha::rand_core::{RngCore, SeedableRng};
 use reqwest::{Method, Url};
+use scraper::{Html, Selector};
 use std::str::FromStr;
 
 #[cfg_attr(feature = "uniffi", derive(uniffi::Object))]
@@ -24,6 +25,22 @@ impl API {
             url.set_path(&format!("{}{}", url.path(), "/"))
         }
         Self { base: url, opts }
+    }
+
+    pub fn scrape_expiries(url: Url) -> PbResult<Vec<String>> {
+        let client = reqwest::blocking::Client::new();
+        let response = client.get(url).send()?;
+        response.error_for_status_ref()?;
+        let html = response.text()?;
+        let document = Html::parse_document(&html);
+        let expiries_selector = Selector::parse("#expiration + ul > li > a").unwrap();
+        let mut expiries = Vec::new();
+        for expiry_anchor in document.select(&expiries_selector) {
+            if let Some(expiry) = expiry_anchor.attr("data-expiration") {
+                expiries.push(expiry.to_string());
+            }
+        }
+        Ok(expiries)
     }
 }
 
