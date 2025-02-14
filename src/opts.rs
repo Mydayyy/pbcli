@@ -31,6 +31,7 @@ pub struct Opts {
 
     #[cfg_attr(feature = "uniffi", uniffi(default = None))]
     #[clap(long)]
+    #[arg(value_parser = |x: &str| parse_size(x))] // closure: https://github.com/clap-rs/clap/issues/4939
     #[clap(help(
         "Prompt if the paste exceeds the given size. Fail in non-interactive environments."
     ))]
