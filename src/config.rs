@@ -72,6 +72,14 @@ pub fn get_config_args(skip_default_locations: bool) -> Vec<OsString> {
             return;
         }
 
+        if line.is_empty() {
+            return;
+        }
+
+        if line.chars().all(char::is_whitespace) {
+            return;
+        }
+
         config_args.push(line.into());
     });
 
