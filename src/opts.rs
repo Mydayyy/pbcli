@@ -10,20 +10,19 @@ Project home page: https://github.com/Mydayyy/pbcli";
 
 #[derive(Debug, Parser, Clone)]
 #[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
-#[clap(setting = clap::AppSettings::AllArgsOverrideSelf, version = env ! ("CARGO_PKG_VERSION"), author = "Mydayyy <dev@mydayyy.eu>", about = ABOUT
-)]
-#[clap(term_width(if let Some((terminal_size::Width(w), _)) = terminal_size::terminal_size() { w as usize } else { 120 }
-))]
+#[clap( version = env ! ("CARGO_PKG_VERSION"), author = "Mydayyy <dev@mydayyy.eu>", about = ABOUT)]
+#[clap(term_width(if let Some((terminal_size::Width(w), _)) = terminal_size::terminal_size() { w as usize } else { 120 }))]
 #[clap(rename_all = "kebab-case")]
+#[command(args_override_self = true)]
 pub struct Opts {
-    #[clap(required_unless_present("host"), parse(try_from_str))]
+    #[clap(required_unless_present("host"))]
     pub url: Option<Url>,
 
     #[cfg_attr(feature = "uniffi", uniffi(default = None))]
-    #[clap(long, parse(try_from_str))]
+    #[clap(long)]
     pub host: Option<Url>,
 
-    #[clap(long, arg_enum, default_value = "plaintext")]
+    #[clap(long, value_enum, default_value = "plaintext")]
     pub format: PasteFormat,
 
     #[cfg_attr(feature = "uniffi", uniffi(default = "1week"))]
@@ -31,7 +30,7 @@ pub struct Opts {
     pub expire: String,
 
     #[cfg_attr(feature = "uniffi", uniffi(default = None))]
-    #[clap(long, parse(try_from_str = parse_size))]
+    #[clap(long)]
     #[clap(help(
         "Prompt if the paste exceeds the given size. Fail in non-interactive environments."
     ))]
@@ -63,7 +62,7 @@ pub struct Opts {
     pub comment_to: Option<String>,
 
     #[cfg_attr(feature = "uniffi", uniffi(default = None))]
-    #[clap(long, parse(from_os_str), value_name = "FILE")]
+    #[clap(long, value_name = "FILE")]
     pub download: Option<std::path::PathBuf>,
     #[cfg_attr(feature = "uniffi", uniffi(default = false))]
     #[clap(long)]
@@ -71,7 +70,7 @@ pub struct Opts {
     pub overwrite: bool,
 
     #[cfg_attr(feature = "uniffi", uniffi(default = None))]
-    #[clap(long, parse(from_os_str), value_name = "FILE")]
+    #[clap(long, value_name = "FILE")]
     pub upload: Option<std::path::PathBuf>,
 
     #[cfg_attr(feature = "uniffi", uniffi(default = None))]
@@ -79,7 +78,7 @@ pub struct Opts {
     pub password: Option<String>,
 
     #[cfg_attr(feature = "uniffi", uniffi(default = None))]
-    #[clap(long, requires_all(& ["oidc-client-id", "oidc-username", "oidc-password"]))]
+    #[clap(long, requires_all(& ["oidc_client_id", "oidc_username", "oidc_password"]))]
     #[clap(help("oidc token endpoint from which to obtain an access token"))]
     pub oidc_token_url: Option<String>,
 

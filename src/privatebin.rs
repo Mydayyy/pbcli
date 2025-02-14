@@ -20,7 +20,7 @@ pub enum CompressionType {
     Zlib,
 }
 
-#[derive(Default, clap::ArgEnum, Deserialize, Debug, Serialize, Clone, Copy)]
+#[derive(Default, clap::ValueEnum, Deserialize, Debug, Serialize, Clone, Copy)]
 #[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
 pub enum PasteFormat {
     #[default]
