@@ -108,6 +108,7 @@ pub struct Opts {
     #[clap(help("do not look for config in default locations"))]
     pub no_default_config: bool,
 
+    #[cfg_attr(feature = "uniffi", uniffi(default = false))]
     #[clap(long)]
     #[clap(help("attempt scraping supported expiries of given host and exit"))]
     pub scrape_expiries: bool,
