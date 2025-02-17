@@ -42,12 +42,22 @@ pub struct Opts {
     pub json: bool,
     #[cfg_attr(feature = "uniffi", uniffi(default = false))]
     #[clap(long, short = 'b', conflicts_with = "discussion")]
+    #[clap(overrides_with = "no_burn")]
     #[clap(help("enable burn on read for new paste"))]
     pub burn: bool,
     #[cfg_attr(feature = "uniffi", uniffi(default = false))]
+    #[clap(long, short = 'B')]
+    #[clap(help("disable burn if set"))]
+    pub no_burn: bool,
+    #[cfg_attr(feature = "uniffi", uniffi(default = false))]
     #[clap(long, short = 'd')]
+    #[clap(overrides_with = "no_discussion")]
     #[clap(help("enable discussion for new paste"))]
     pub discussion: bool,
+    #[cfg_attr(feature = "uniffi", uniffi(default = false))]
+    #[clap(long, short = 'D')]
+    #[clap(help("disable burn if set"))]
+    pub no_discussion: bool,
 
     #[cfg_attr(feature = "uniffi", uniffi(default = false))]
     #[clap(long, requires("url"))]
