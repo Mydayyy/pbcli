@@ -63,15 +63,15 @@ pub struct Opts {
     pub comment_to: Option<String>,
 
     #[cfg_attr(feature = "uniffi", uniffi(default = None))]
-    #[clap(long, value_name = "FILE")]
+    #[clap(long, short = 'o', value_name = "FILE")]
     pub download: Option<std::path::PathBuf>,
     #[cfg_attr(feature = "uniffi", uniffi(default = false))]
-    #[clap(long)]
+    #[clap(long, short = 'w')]
     #[clap(help("overwrite the file given with --download if it already exists"))]
     pub overwrite: bool,
 
     #[cfg_attr(feature = "uniffi", uniffi(default = None))]
-    #[clap(long, value_name = "FILE")]
+    #[clap(long, short = 'u', value_name = "FILE")]
     pub upload: Option<std::path::PathBuf>,
 
     #[cfg_attr(feature = "uniffi", uniffi(default = None))]
