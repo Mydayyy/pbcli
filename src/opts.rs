@@ -22,11 +22,11 @@ pub struct Opts {
     #[clap(long)]
     pub host: Option<Url>,
 
-    #[clap(long, value_enum, default_value = "plaintext")]
+    #[clap(long, short = 'f', value_enum, default_value = "plaintext")]
     pub format: PasteFormat,
 
     #[cfg_attr(feature = "uniffi", uniffi(default = "1week"))]
-    #[clap(long, default_value = "1week")]
+    #[clap(long, short = 'e', default_value = "1week")]
     pub expire: String,
 
     #[cfg_attr(feature = "uniffi", uniffi(default = None))]
@@ -41,13 +41,23 @@ pub struct Opts {
     #[clap(long, help("richer output: for delete_url, comments, etc"))]
     pub json: bool,
     #[cfg_attr(feature = "uniffi", uniffi(default = false))]
-    #[clap(long, conflicts_with = "discussion")]
+    #[clap(long, short = 'b', conflicts_with = "discussion")]
+    #[clap(overrides_with = "no_burn")]
     #[clap(help("enable burn on read for new paste"))]
     pub burn: bool,
     #[cfg_attr(feature = "uniffi", uniffi(default = false))]
-    #[clap(long)]
+    #[clap(long, short = 'B')]
+    #[clap(help("disable burn if set"))]
+    pub no_burn: bool,
+    #[cfg_attr(feature = "uniffi", uniffi(default = false))]
+    #[clap(long, short = 'd')]
+    #[clap(overrides_with = "no_discussion")]
     #[clap(help("enable discussion for new paste"))]
     pub discussion: bool,
+    #[cfg_attr(feature = "uniffi", uniffi(default = false))]
+    #[clap(long, short = 'D')]
+    #[clap(help("disable burn if set"))]
+    pub no_discussion: bool,
 
     #[cfg_attr(feature = "uniffi", uniffi(default = false))]
     #[clap(long, requires("url"))]
@@ -63,19 +73,19 @@ pub struct Opts {
     pub comment_to: Option<String>,
 
     #[cfg_attr(feature = "uniffi", uniffi(default = None))]
-    #[clap(long, value_name = "FILE")]
+    #[clap(long, short = 'o', value_name = "FILE")]
     pub download: Option<std::path::PathBuf>,
     #[cfg_attr(feature = "uniffi", uniffi(default = false))]
-    #[clap(long)]
+    #[clap(long, short = 'w')]
     #[clap(help("overwrite the file given with --download if it already exists"))]
     pub overwrite: bool,
 
     #[cfg_attr(feature = "uniffi", uniffi(default = None))]
-    #[clap(long, value_name = "FILE")]
+    #[clap(long, short = 'u', value_name = "FILE")]
     pub upload: Option<std::path::PathBuf>,
 
     #[cfg_attr(feature = "uniffi", uniffi(default = None))]
-    #[clap(long)]
+    #[clap(long, short = 'p')]
     pub password: Option<String>,
 
     #[cfg_attr(feature = "uniffi", uniffi(default = None))]
