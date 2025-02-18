@@ -1,5 +1,5 @@
 use crate::error::{PasteError, PbResult};
-use crate::privatebin::Cipher;
+use crate::privatebin::{Cipher, CompressionType};
 use aes_gcm::aead::{Aead, NewAead};
 use aes_gcm::{Key, Nonce};
 
@@ -28,6 +28,7 @@ pub fn decrypt_with_password<DecryptedT: serde::de::DeserializeOwned>(
     let cipher_algo = &decryptable.get_cipher().cipher_algo;
     let cipher_mode = &decryptable.get_cipher().cipher_mode;
     let kdf_keysize = decryptable.get_cipher().kdf_keysize;
+    let compression_type = &decryptable.get_cipher().compression_type;
 
     let salt = &decryptable.get_cipher().vec_kdf_salt()?;
     let iterations = std::num::NonZeroU32::new(decryptable.get_cipher().kdf_iterations).unwrap();
@@ -39,7 +40,7 @@ pub fn decrypt_with_password<DecryptedT: serde::de::DeserializeOwned>(
 
     match (&cipher_algo[..], &cipher_mode[..], kdf_keysize) {
         ("aes", "gcm", 256) => {
-            let data = decrypt_aes_256_gcm(decryptable, &derived_key)?;
+            let data = decrypt_aes_256_gcm(decryptable, &derived_key, compression_type)?;
             let value: serde_json::Value = serde_json::from_slice(&data)?;
             Ok(serde_json::from_value(value)?)
         }
@@ -83,7 +84,11 @@ pub fn encrypt(
     Ok(encrypted_data)
 }
 
-fn decrypt_aes_256_gcm(decryptable: &impl Decryptable, derived_key: &[u8]) -> PbResult<Vec<u8>> {
+fn decrypt_aes_256_gcm(
+    decryptable: &impl Decryptable,
+    derived_key: &[u8],
+    compression_type: &CompressionType,
+) -> PbResult<Vec<u8>> {
     type Cipher = aes_gcm::AesGcm<aes_gcm::aes::Aes256, typenum::U16>;
     let ciphertext = base64::decode(decryptable.get_ct())?;
     let nonce = decryptable.get_cipher().vec_cipher_iv()?;
@@ -95,6 +100,9 @@ fn decrypt_aes_256_gcm(decryptable: &impl Decryptable, derived_key: &[u8]) -> Pb
         aad: adata_str.as_bytes(),
     };
     let data = cipher.decrypt(Nonce::from_slice(&nonce), payload)?;
-    let decompressed = miniz_oxide::inflate::decompress_to_vec(&data)?;
+    let decompressed = match compression_type {
+        CompressionType::None => data,
+        CompressionType::Zlib => miniz_oxide::inflate::decompress_to_vec(&data)?,
+    };
     Ok(decompressed)
 }
