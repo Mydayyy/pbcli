@@ -40,7 +40,7 @@ pub fn decrypt_with_password<DecryptedT: serde::de::DeserializeOwned>(
 
     match (&cipher_algo[..], &cipher_mode[..], kdf_keysize) {
         ("aes", "gcm", 256) => {
-            let data = decrypt_aes_256_gcm(decryptable, &derived_key, &compression_type)?;
+            let data = decrypt_aes_256_gcm(decryptable, &derived_key, compression_type)?;
             let value: serde_json::Value = serde_json::from_slice(&data)?;
             Ok(serde_json::from_value(value)?)
         }
