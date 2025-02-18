@@ -99,43 +99,42 @@ echo 'TestPaste' | pbcli --host https://privatebin.net/ --burn
 #### CLI Help:
 
 ```
-pbcli 2.5.0
-Mydayyy <dev@mydayyy.eu>
 pbcli is a command line client which allows to upload and download
 pastes from privatebin directly from the command line.
 
 Project home page: https://github.com/Mydayyy/pbcli
 
-USAGE:
-    pbcli [OPTIONS] [URL]
+Usage: pbcli [OPTIONS] [URL]
 
-ARGS:
-    <URL>    
+Arguments:
+  [URL]  
 
-OPTIONS:
-        --burn                               enable burn on read for new paste
-        --comment                            make new comment on existing paste
-        --comment-as <nickname>              use this nick for comment
-        --comment-to <parentid>              reply to this parent comment
-        --debug                              print debug output to stderr
-        --discussion                         enable discussion for new paste
-        --download <FILE>                    
-        --expire <EXPIRE>                    [default: 1week]
-        --format <FORMAT>                    [default: plaintext] [possible values: plaintext, syntax, markdown]
-    -h, --help                               Print help information
-        --host <HOST>                        
-        --json                               richer output: for delete_url, comments, etc
-        --no-default-config                  do not look for config in default locations
-        --oidc-client-id <OIDC_CLIENT_ID>    client id to send to the token endpoint
-        --oidc-password <OIDC_PASSWORD>      password to send to the token endpoint
-        --oidc-token-url <OIDC_TOKEN_URL>    oidc token endpoint from which to obtain an access token
-        --oidc-username <OIDC_USERNAME>      username to send to the token endpoint
-        --overwrite                          overwrite the file given with --download if it already exists
-        --password <PASSWORD>                
-        --scrape-expiries                    attempt scraping supported expiries of given host and exit
-        --size-limit <SIZE_LIMIT>            Prompt if the paste exceeds the given size. Fail in non-interactive environments.
-        --upload <FILE>                      
-    -V, --version                            Print version information
+Options:
+      --host <HOST>                      
+  -f, --format <FORMAT>                  [default: plaintext] [possible values: plaintext, syntax, markdown]
+  -e, --expire <EXPIRE>                  [default: 1week]
+      --size-limit <SIZE_LIMIT>          Prompt if the paste exceeds the given size. Fail in non-interactive environments.
+      --json                             richer output: for delete_url, comments, etc
+  -b, --burn                             enable burn on read for new paste
+  -B, --no-burn                          disable burn if set
+  -d, --discussion                       enable discussion for new paste
+  -D, --no-discussion                    disable burn if set
+      --comment                          make new comment on existing paste
+      --comment-as <nickname>            use this nick for comment
+      --comment-to <parentid>            reply to this parent comment
+  -o, --download <FILE>                  
+  -w, --overwrite                        overwrite the file given with --download if it already exists
+  -u, --upload <FILE>                    
+  -p, --password <PASSWORD>              
+      --oidc-token-url <OIDC_TOKEN_URL>  oidc token endpoint from which to obtain an access token
+      --oidc-client-id <OIDC_CLIENT_ID>  client id to send to the token endpoint
+      --oidc-username <OIDC_USERNAME>    username to send to the token endpoint
+      --oidc-password <OIDC_PASSWORD>    password to send to the token endpoint
+      --debug                            print debug output to stderr
+      --no-default-config                do not look for config in default locations
+      --scrape-expiries                  attempt scraping supported expiries of given host and exit
+  -h, --help                             Print help
+  -V, --version                          Print version
 ```
 
 ### Configuration File
