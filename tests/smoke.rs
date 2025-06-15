@@ -1,8 +1,10 @@
+use crate::util::{setup, TestHarness};
 use assert_cmd::Command;
 use pbcli::{api, Opts};
 use predicates::prelude::*;
 use url::Url;
 
+mod util;
 #[macro_use]
 mod macros;
 
@@ -11,7 +13,30 @@ fn test_add() {
     assert_eq!(true, true);
 }
 
-const INSTANCE: &str = "https://paste.ononoki.org";
+const INSTANCE: &str = "https://paste.mydayyy.eu";
+
+#[test]
+fn harness() {
+    // let _harness = TestHarness::new("harness");
+    let (harness, mut pbcli) = setup("harness");
+    harness.create_file("test.txt", "test content");
+    let binding = pbcli.arg("--upload").arg("test.txt").assert().success();
+    let o = binding.get_output().clone();
+    println!("{:?}", String::from_utf8(o.stdout));
+}
+
+#[test]
+fn upload_download() {
+    let (harness, mut pbcli) = setup("upload");
+    harness.create_file("in.txt", "test content");
+    pbcli.arg("--upload").arg("in.txt").assert().success();
+    let url: String = String::from_utf8(pbcli.output().unwrap().stdout.clone()).unwrap();
+
+    println!("URL: {}", url);
+
+    let (harness, mut pbcli) = setup("download");
+    pbcli.arg("--download").arg("out.txt").assert().success();
+}
 
 #[test]
 fn post_get() {
