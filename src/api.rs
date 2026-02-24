@@ -140,11 +140,9 @@ fn pem_certs_from_bundle(pem: &[u8]) -> PbResult<Vec<Certificate>> {
         } else if line.contains("END CERTIFICATE") {
             current.push_str(line);
             current.push('\n');
-            certs.push(
-                Certificate::from_pem(current.as_bytes()).map_err(|e| {
-                    PbError::InvalidCertificate(format!("invalid certificate in bundle: {}", e))
-                })?,
-            );
+            certs.push(Certificate::from_pem(current.as_bytes()).map_err(|e| {
+                PbError::InvalidCertificate(format!("invalid certificate in bundle: {}", e))
+            })?);
             in_cert = false;
         } else if in_cert {
             current.push_str(line);
