@@ -108,6 +108,21 @@ pub struct Opts {
     #[clap(help("password to send to the token endpoint"))]
     pub oidc_password: Option<String>,
 
+    #[cfg_attr(feature = "uniffi", uniffi(default = None))]
+    #[clap(long, value_name = "FILE")]
+    #[clap(help("path to a PEM CA certificate bundle for TLS verification"))]
+    pub ca_cert: Option<std::path::PathBuf>,
+
+    #[cfg_attr(feature = "uniffi", uniffi(default = false))]
+    #[clap(long)]
+    #[clap(help("accept invalid TLS certificates (insecure)"))]
+    pub insecure: bool,
+
+    #[cfg_attr(feature = "uniffi", uniffi(default = None))]
+    #[clap(long, value_name = "SECONDS")]
+    #[clap(help("connection timeout in seconds (default: 30)"))]
+    pub timeout: Option<u64>,
+
     #[cfg_attr(feature = "uniffi", uniffi(default = false))]
     #[clap(long)]
     #[clap(help("print debug output to stderr"))]

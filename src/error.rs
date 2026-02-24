@@ -37,6 +37,7 @@ pub enum PasteError {
     InvalidTokenType(String),
     OidcBadRequest(serde_json::Value),
     LoggerInit(log::SetLoggerError),
+    InvalidCertificate(String),
 }
 
 impl std::error::Error for PasteError {}
@@ -76,6 +77,7 @@ impl fmt::Display for PasteError {
             PasteError::LoggerInit(err) => {
                 write!(f, "Failed to init logger: {}", err)
             }
+            PasteError::InvalidCertificate(msg) => write!(f, "{}", msg),
         }
     }
 }
