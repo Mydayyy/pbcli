@@ -68,10 +68,8 @@ fn handle_get(opts: &Opts) -> PbResult<()> {
         }
     }
 
-    if content.attachment.is_some() && opts.download.is_some() {
-        let attachment = content.attachment.as_ref().unwrap();
-        let outfile = opts.download.as_ref().unwrap();
-
+    if let (Some(attachment), Some(outfile)) = (content.attachment.as_ref(), opts.download.as_ref())
+    {
         let url = DataUrl::process(attachment)?;
         let (body, _) = url.decode_to_vec().unwrap();
 
