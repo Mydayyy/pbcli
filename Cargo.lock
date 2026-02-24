@@ -1284,7 +1284,7 @@ checksum = "de3145af08024dea9fa9914f381a17b8fc6034dfb00f3a84013f7ff43f29ed4c"
 
 [[package]]
 name = "pbcli"
-version = "2.8.0"
+version = "2.9.0"
 dependencies = [
  "aes-gcm",
  "base64 0.13.1",
