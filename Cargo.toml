@@ -50,3 +50,4 @@ openssl = { version = "0.10", features = ["vendored"] }
 directories = "5.0.1"
 log = "0.4.22"
 scraper = "0.21.0"
+ureq = "2"
