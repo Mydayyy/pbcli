@@ -60,6 +60,13 @@ pub struct Opts {
     pub no_discussion: bool,
 
     #[cfg_attr(feature = "uniffi", uniffi(default = false))]
+    #[clap(long, help("Shorten the resulting paste URL via PrivateBin's YOURLS proxy"))]
+    pub shorten: bool,
+
+    #[clap(long, overrides_with = "shorten")]
+    pub no_shorten: bool,
+
+    #[cfg_attr(feature = "uniffi", uniffi(default = false))]
     #[clap(long, requires("url"))]
     #[clap(help("make new comment on existing paste"))]
     pub comment: bool,
