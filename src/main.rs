@@ -1,17 +1,17 @@
 use clap::Parser;
 use data_url::DataUrl;
-use url::Url;
-use reqwest::blocking::Client;
 use pbcli::api::API;
 use pbcli::error::{PasteError, PbResult};
 use pbcli::opts::Opts;
 use pbcli::privatebin::{DecryptedComment, DecryptedCommentsMap, DecryptedPaste};
 use pbcli::util::check_filesize;
+use reqwest::blocking::Client;
 use serde_json::Value;
-use std::time::Duration;
 use std::ffi::OsString;
 use std::io::IsTerminal;
 use std::io::{Read, Write};
+use std::time::Duration;
+use url::Url;
 
 mod logger;
 
@@ -112,10 +112,10 @@ fn shorten_via_privatebin(opts: &Opts, long_url: &str) -> PbResult<String> {
 
         let client = Client::builder().timeout(Duration::from_secs(5)).build()?;
         let resp_text = client
-        .get(endpoint.clone())
-        .send()?
-        .error_for_status()?
-        .text()?;
+            .get(endpoint.clone())
+            .send()?
+            .error_for_status()?
+            .text()?;
 
         let text = resp_text.trim();
 
@@ -161,24 +161,18 @@ fn shorten_via_privatebin(opts: &Opts, long_url: &str) -> PbResult<String> {
     }
 
     // 1) try YOURLS proxy first
-    match try_method(opts, long_url, "shortenviayourls") {
-        Ok(u) => Ok(u),
-        Err(e1) => {
-            log::debug!("YOURLS shorten failed ({e1:?}), trying shlink…");
-
-            // 2) fall back to shlink proxy
-            match try_method(opts, long_url, "shortenviashlink") {
-                Ok(u) => Ok(u),
-                Err(e2) => {
-                    // preserve useful debug, but return a single error
-                    log::debug!("Shlink shorten also failed ({e2:?})");
-                    Err(PasteError::InvalidData)
-                }
+    let shorteners = ["shortenviayourls", "shortenviashlink"];
+    shorteners
+        .iter()
+        .find_map(|method| match try_method(opts, long_url, method) {
+            Ok(u) => Some(Ok(u)),
+            Err(e) => {
+                log::debug!("shorten failed: {method} ({e:?})");
+                None
             }
-        }
-    }
+        })
+        .unwrap_or_else(|| Err(PasteError::InvalidData))
 }
-
 
 fn handle_post(opts: &Opts) -> PbResult<()> {
     let url = opts.get_url();
