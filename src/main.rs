@@ -11,7 +11,6 @@ use std::ffi::OsString;
 use std::io::IsTerminal;
 use std::io::{Read, Write};
 use std::time::Duration;
-use url::Url;
 
 mod logger;
 
