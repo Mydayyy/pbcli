@@ -6,6 +6,7 @@ use pbcli::opts::Opts;
 use pbcli::privatebin::{DecryptedComment, DecryptedCommentsMap, DecryptedPaste};
 use pbcli::util::check_filesize;
 use reqwest::blocking::Client;
+use scraper::{Html, Selector};
 use serde_json::Value;
 use std::ffi::OsString;
 use std::io::IsTerminal;
@@ -132,31 +133,17 @@ fn shorten_via_privatebin(opts: &Opts, long_url: &str) -> PbResult<String> {
         }
 
         // HTML: accept only <a id="pasteurl" href="...">
-        if let Some(id_pos) = text.find("id=\"pasteurl\"") {
-            let after_id = &text[id_pos..];
+        let document = Html::parse_document(text);
+        let pasteurl_selector = Selector::parse("#pasteurl").unwrap();
+        let pasteurl_element = document
+            .select(&pasteurl_selector)
+            .next()
+            .ok_or(PasteError::InvalidData)?;
+        let href = pasteurl_element
+            .attr("href")
+            .ok_or(PasteError::InvalidData)?;
 
-            if let Some(href_pos) = after_id.find("href=\"") {
-                let after_href = &after_id[href_pos + "href=\"".len()..];
-                if let Some(end) = after_href.find('"') {
-                    let url = &after_href[..end];
-                    if url.starts_with("https://") || url.starts_with("http://") {
-                        return Ok(url.to_string());
-                    }
-                }
-            }
-
-            if let Some(href_pos) = after_id.find("href='") {
-                let after_href = &after_id[href_pos + "href='".len()..];
-                if let Some(end) = after_href.find('\'') {
-                    let url = &after_href[..end];
-                    if url.starts_with("https://") || url.starts_with("http://") {
-                        return Ok(url.to_string());
-                    }
-                }
-            }
-        }
-
-        Err(PasteError::InvalidData)
+        Ok(href.into())
     }
 
     // 1) try YOURLS proxy first
